@@ -1,0 +1,571 @@
+#+TITLE: Basic Emacs Configuration
+#+LANGUAGE: en
+#+STARTUP: fold
+
+This is a basic config file I'm creating to make it easy to start with emacs.
+
+* Load Package Repositories
+#+begin_src emacs-lisp :tangle yes
+  (require 'package)
+  (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+			   ("melpa" . "http://melpa.org/packages/") ))
+  ;; (package-initialize) ;; required for earlier emacs
+
+  ;; Load use-package
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (eval-and-compile
+    (setq use-package-always-ensure t
+	  use-package-expand-minimally t))
+#+end_src
+** Quelpa
+[[https://github.com/quelpa/quelpa][Quelpa]] is an emacs package installer that allows you to directly install from github.
+[[https://github.com/quelpa/quelpa-use-package][Quelpa-use-package]] is a package that allows use-package to install through quelpa.
+#+begin_src emacs-lisp :tangle yes
+  (use-package quelpa
+    :ensure t)
+  (use-package quelpa-use-package
+    :ensure t)
+#+end_src
+* Utilities
+** Helm
+[[https://emacs-helm.github.io/helm/][Helm]] is an incremental completion framework for improving the file and directory navigation.
+#+begin_src emacs-lisp :tangle yes
+  (use-package helm
+    :bind (("C-c h" . helm-command-prefix)
+	   ("M-x" . helm-M-x)
+	   ("C-x b" . helm-mini)
+	   ("C-x C-b" . helm-buffers-list)
+	   ("C-x C-f" . helm-find-files)
+	   :map helm-find-files-map
+	   ("\t" . helm-execute-persistent-action)
+	   :map helm-map
+	   ("C-i" . helm-execute-persistent-action)
+	   ("C-z" . helm-select-action))
+    :config (setq
+	     helm-split-window-inside-p t
+	     helm-move-to-line-cycle-in-source t
+	     helm-ff-search-library-in-sexp t
+	     helm-scroll-amount 8
+	     helm-ff-file-name-history-use-recentf t
+	     helm-semantic-fuzzy-match t
+	     helm-imenu-fuzzy-match t
+	     helm-echo-input-in-header-line t
+	     helm-autoresize-max-height 0
+	     helm-autoresize-min-height 20)
+    (helm-autoresize-mode 1)
+    (helm-mode 1)
+
+    (defun my//helm-hide-minibuffer-maybe ()
+    "Hide minibuffer in Helm session if we use the header line as input field."
+    (when (with-helm-buffer helm-echo-input-in-header-line)
+      (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+	(overlay-put ov 'window (selected-window))
+	(overlay-put ov 'face
+		     (let ((bg-color (face-background 'default nil)))
+		       `(:background ,bg-color :foreground ,bg-color)))
+	(setq-local cursor-type nil))))
+
+    (add-hook 'helm-minibuffer-set-up-hook
+	    'my//helm-hide-minibuffer-maybe))
+
+  (use-package helm-ls-git)
+  (use-package helm-swoop)
+#+end_src
+** Magit
+[[https://emacs-helm.github.io/helm/][Magit]] is a "git porcelai", i.e., a git interface in emacs.
+#+begin_src emacs-lisp :tangle yes
+  (use-package magit
+    :bind (("M-g M-s" . magit-status)
+	   ("M-g M-c" . magit-checkout)))
+#+end_src
+** Yasnippet
+[[https://github.com/joaotavora/yasnippet][Yasnippet]] is a template expansion framework in emacs. It defines convenient templates that can get expanded.
+#+begin_src emacs-lisp :tangle yes
+    (use-package yasnippet
+      :config (yas-global-mode 1)
+      (advice-add 'yas--auto-fill-wrapper :override #'ignore))
+
+    (use-package yasnippet-snippets)
+    (use-package yasnippet-capf)
+#+end_src
+** Iedit
+[[https://github.com/victorhge/iedit][Iedit]] allows editing multiple occurrences of a string in a buffer.
+#+begin_src emacs-lisp :tangle yes
+(use-package iedit)
+#+end_src
+** Company Mode
+[[http://company-mode.github.io/][Company]] is a completion framework in emacs. We'll set this up with each IDE we install.
+#+begin_src emacs-lisp :tangle yes
+  (use-package company
+    :config (add-hook 'after-init-hook 'global-company-mode)
+    ;; (setq company-minimum-prefix-length 1)
+    )
+  (use-package company-quickhelp
+    :hook ((company-mode . company-quickhelp-mode))
+    :config (setq company-quickhelp-color-background "black"))
+#+end_src
+** Outline
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Outline-Mode.html][Outline]] is an emacs minor mode that allows for code folding.
+#+begin_src emacs-lisp :tangle yes
+  (use-package outline
+    :bind (:map outline-mode-map
+		("C-<tab>" . outline-cycle)
+		("C-<iso-lefttab>" . outline-cycle-buffer)))
+#+end_src
+** Language Server Protocol
+** Dired subtree
+#+begin_src emacs-lisp :tangle yes
+  (use-package dired-subtree
+    :hook ((dired-mode . dired-hide-details-mode))
+    :bind (:map dired-mode-map
+	   ("<tab>" . dired-subtree-toggle))
+    )
+#+end_src
+* Org-mode
+Org mode is Emacs' own markdown environment. It's extremely powerful.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org
+    :bind (("C-c l" . org-store-link)
+	   ("C-c a" . org-agenda)
+	   ("C-c c" . org-capture)
+	   ("C-c b" . org-iswitchb)
+	   ("C-c o" . org-indent-mode)
+	   :map org-mode-map
+	   ("C-c C-b" . org-beamer-select-environment)
+	   ("<f9>" . org-babel-execute-src-block-maybe)
+	   )
+    :config (setq org-log-done 'time
+		  org-log-done 'note
+		  org-startup-folded 'show2levels
+		  org-stuck-projects
+		  '("+PROJECT/-MAYBE-DONE" ("TODO" "STARTED") nil "\\<IGNORE\\>")
+		  org-clock-persist 'history
+		  org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")
+		  org-ellipsis "↴"
+		  org-cite-csl-styles-dir "~/Zotero/styles/")
+    ;; ▼, ↴, ⬎, ⤷, ⋱, ⤵
+    (org-clock-persistence-insinuate)
+    (org-babel-do-load-languages 'org-babel-load-languages
+				 '((emacs-lisp . t)
+				   (python . t)
+				   (maxima . t)
+				   (octave . t)
+				   (matlab . t)))
+    )
+
+  (use-package org-special-block-extras
+    :hook ((org-mode . org-special-block-extras-mode))
+    )
+  (use-package org-bullets
+    :hook ((org-mode . (lambda () (org-bullets-mode t))))
+    )
+
+  (use-package ov)
+  (use-package org-colored-text
+    :load-path "~/.emacs.d/locpacks/org-colored-text"
+    :config (org-link-set-parameters
+	     "color"
+	     (lambda (path)
+	       "No follow action.")
+	     (lambda (color description backend)
+	       (cond
+		((eq backend 'latex)                  ; added by TL
+		 (format "{\\color{%s}%s}" color description)) ; added by TL
+		((eq backend 'html)
+		 (let ((rgb (assoc color color-name-rgb-alist))
+		       r g b)
+		   (if rgb
+		       (progn
+			 (setq r (* 255 (/ (nth 1 rgb) 65535.0))
+			       g (* 255 (/ (nth 2 rgb) 65535.0))
+			       b (* 255 (/ (nth 3 rgb) 65535.0)))
+			 (format "<span style=\"color: rgb(%s,%s,%s)\">%s</span>"
+				 (truncate r) (truncate g) (truncate b)
+				 (or description color)))
+		     (format "No Color RGB for %s" color))))))))
+
+  ;; oer-reveal
+  (use-package oer-reveal)
+#+end_src
+** Org-Roam
+[[https://www.orgroam.com/][Org-Roam]] is based on the Zettelkasten note keeping technique, helping you thoughts and ideas.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-roam
+    :init (setq org-roam-v2-ack t)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+	   ;; ("C-c n f" . org-roam-node-find)
+	   ("C-c n i" . org-roam-node-insert)
+	   :map org-mode-map
+	   ("C-M-i" . completion-at-point))
+    :config
+    (setq org-roam-directory (file-truename "~/org-roam"))
+    (org-roam-db-autosync-mode)
+    )
+
+  (require 'org-roam-node)
+
+  (use-package escalator
+    :quelpa (escalator :fetcher github
+		       :repo "ag91/escalator")
+    :bind (("C-c n f" . escalator-helm-org-roam))
+    )
+
+  ;; Get Agenda to Work
+  (defun my/org-roam-filter-by-tag (tag-name)
+    (lambda (node)
+      (member tag-name (org-roam-node-tags node))))
+
+  (defun my/org-roam-list-notes-by-tag (tag-name)
+    (mapcar #'org-roam-node-file
+	    (seq-filter
+	     (my/org-roam-filter-by-tag tag-name)
+	     (org-roam-node-list))))
+
+  (defun my/org-roam-refresh-agenda-list ()
+    (interactive)
+    (setq org-agenda-files (append
+			    (my/org-roam-list-notes-by-tag "Project")
+			    (my/org-roam-list-notes-by-tag "Life"))))
+
+  ;; Build the agenda list the first time for the session
+  (my/org-roam-refresh-agenda-list)
+
+  ;; Find by tags
+  (defun my/org-roam-project-finalize-hook ()
+    "Adds the captured project file to `org-agenda-files' if the
+  capture was not aborted."
+    ;; Remove the hook since it was added temporarily
+    (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Add project file to the agenda list if the capture was confirmed
+    (unless org-note-abort
+      (with-current-buffer (org-capture-get :buffer)
+	(add-to-list 'org-agenda-files (buffer-file-name)))))
+
+  (defun my/org-roam-find-project ()
+    (interactive)
+    ;; Add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Select a project file to open, creating it if necessary
+    (org-roam-node-find
+     nil
+     nil
+     (my/org-roam-filter-by-tag "Project")
+     :templates
+     '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+	:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+	:unnarrowed t))))
+
+  (global-set-key (kbd "C-c n p") #'my/org-roam-find-project)
+
+  ;; Capture task directly into project
+  (defun my/org-roam-capture-task ()
+    (interactive)
+    ;; Add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Capture the new task, creating the project file if necessary
+    (org-roam-capture- :node (org-roam-node-read
+			      nil
+			      (my/org-roam-filter-by-tag "Project"))
+		       :templates '(("p" "project" plain "* TODO %?"
+				     :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
+							    "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
+							    ("Tasks"))))))
+
+  (global-set-key (kbd "C-c n t") #'my/org-roam-capture-task)
+#+end_src
+* Integrated Development Environments
+** Latex
+It is necessary to have a latex installation (Texlive is recommended, but MikTeX should also work).
+Also install [[https://mg.readthedocs.io/latexmk.html][latexmk]] for building.
+*** AucTeX, RefTeX, and company-auctex
+[[https://www.gnu.org/software/auctex/][AucTeX]] is an emacs package for writing TeX documents.
+[[https://www.gnu.org/software/auctex/reftex.html][RefTeX]] is a package that manages references, labels, citations, etc.
+[[https://github.com/alexeyr/company-auctex][Company-auctex]] is a company backend for auctex.
+#+begin_src emacs-lisp :tangle yes
+  (use-package auctex
+    :hook ((TeX-mode . auto-fill-mode)
+           (TeX-mode . auto-revert-mode)
+           (LaTeX-mode . visual-line-mode)
+           (LaTeX-mode . LaTeX-math-mode)
+           (LaTeX-mode . prettify-symbols-mode)
+           (LaTeX-mode . reftex-mode)
+           (doc-view-mode . auto-revert-mode))
+    :config (defvar preview-default-preamble)
+    (eval-after-load "preview"
+      '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
+    )
+
+  (use-package auctex-latexmk
+    :config (setq LaTeX-command "latex --synctex=1"
+                  LaTeX-section-label (quote
+                                       (("part" . "part:")
+                                        ("chapter" . "chap:")
+                                        ("section" . "sec:")
+                                        ("subsection" . "ssec:")
+                                        ("subsubsection" . "sssec:")))
+                  TeX-auto-save t TeX-parse-self t)
+    (setq-default TeX-master nil)
+    (auctex-latexmk-setup))
+
+  (setq LaTeX-includegraphics-read-file 'LaTeX-includegraphics-read-file-relative
+        reftex-plug-into-AUCTeX t
+        reftex-bibliography-commands '("bibliography" "nobibliography" "addbibresource"))
+
+  (use-package company-auctex
+      :config (company-auctex-init))
+#+end_src
+*** Pdf-Tools
+#+begin_src emacs-lisp :tangle yes
+  (use-package pdf-tools
+      :hook ((pdf-view-mode . (lambda () (display-line-numbers-mode -1))))
+      )
+
+  (pdf-tools-install)
+  (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
+
+  ;; Make pdf-tools default viewer for TeX compile
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools")) TeX-source-correlate-start-server t)
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  (add-hook 'TeX-mode 'pdf-sync-minor-mode)
+  (define-key TeX-mode-map (kbd "C-c M-v") 'pdf-sync-display-pdf)
+  (define-key TeX-mode-map (kbd "C-c v") 'pdf-sync-forward-search)
+#+end_src
+*** CART
+[[https://github.com/Nidish96/cart.el][cart.el]] is an emacs package that allows you to enter calibrated coordinate-based tikz graphics elements into latex documents.
+Quite useful for beamer presentations.
+#+begin_src emacs-lisp :tangle yes
+  (use-package cart
+    :quelpa (cart :fetcher github
+		  :repo "Nidish96/cart.el")
+    :hook ((LaTeX-mode-hook . cart-mode)))
+#+end_src
+** Matlab
+[[https://matlab-emacs.sourceforge.net/index.shtml][Matlab-mode]] is an emacs mode for editing & running matlab scripts. You can launch an inferior shell, do debugging, etc.
+I've setup shortcuts to be identical to what we have with the matlab gui.
+#+begin_src emacs-lisp :tangle yes
+  (use-package matlab
+    :ensure matlab-mode
+    :bind (:map matlab-mode-map
+		("C-<return>" . matlab-shell-run-cell)
+		("C-M-<return>" . matlab-shell-run-region-or-line)
+		("<f4>" . my-matlab-shell-locate-this-fcn)
+		("<f5>" . (lambda () "Run Buffer"
+			    (interactive)
+			    (save-buffer)
+			    (matlab-shell-send-command (file-name-base (buffer-file-name)))))
+		("C-v" . (lambda ()
+			   (interactive)
+			   (unless (search-forward "\n%%" nil t)
+			     (search-forward "%%" nil t))))
+		("M-v" . (lambda ()
+			   (interactive)
+			   (unless (search-backward "\n%%" nil t)
+			     (search-backward "%%" nil t))))
+		("<f9>" . my-matlab-shell-run-region-or-line)
+		("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
+		("M-n" . (lambda () (interactive) (matlab-forward-sexp))))
+    :config
+    (defun my-matlab-shell-locate-this-fcn (&optional fcn)
+      "Run \"which FCN\" in the `matlab-shell', then open the file."
+      (interactive)
+      (let* ((fcn (or fcn (matlab-read-word-at-point)))
+	     (file (matlab-shell-which-fcn fcn)))
+	(if file
+	    (find-file (car file))
+	  (error "Command which('%s') returned empty" fcn))))
+
+    (defun my-matlab-shell-run-region-or-line ()
+      "Send region or line as command to matlab shell"
+      (interactive)
+      (let ((p0) (p1))
+	(if (region-active-p)
+	    (progn
+	      (setq p0 (region-beginning))
+	      (setq p1 (region-end)))
+	  (setq p0 (line-beginning-position))
+	  (setq p1 (line-end-position)))
+	(matlab-shell-send-command (buffer-substring p0 p1))))
+    )
+  (add-hook 'matlab-mode-hook
+	    (defun baba-outline-matlab ()
+	      "Fold definitions in Matlab."
+	      (setq outline-regexp
+		    (rx (or
+			 (group
+			  (group (* space))
+			  bow
+			  (or "classdef" "function" "properties" "methods"
+			      "for" "if" "switch" "case" "while" "end" "%%")
+			  eow))))
+	      ))
+
+  (set-display-table-slot
+   standard-display-table
+   'selective-display
+   (let ((face-offset (* (face-id 'shadow) (ash 1 22))))
+     (vconcat (mapcar (lambda (c) (+ face-offset c)) " +"))))
+
+  ;; completion from matlab shell
+  (defun mymatc (cmd &optional arg &rest ignored)
+    "Complete a partially typed symbol in a MATLAB mode buffer using `matlab-shell'.
+  Use `completion-in-region' to support the completion behavior."
+    (interactive (list 'interactive))
+    ;; Try to do completion with the shell
+    (matlab-navigation-syntax
+      (let* ((common-substr-start-pt (save-excursion (forward-word -1) (point)))
+	     (common-substr-end-pt (point))
+	     (prefix (if (member (preceding-char) '(?  ?\t ?\n ?, ?\( ?\[ ?\' ?\; ?\) ))
+			 ""
+		       (buffer-substring-no-properties
+			common-substr-start-pt common-substr-end-pt)))
+	     )
+	(cl-case cmd
+	  ('interactive (if (fboundp 'company-begin-backend) ;; quiet warning when no company
+			    (company-begin-backend 'mymatc)
+			  (error "company-begin-backend is missing")))
+	  ('prefix (when (eq major-mode 'matlab-mode) prefix))
+	  ('candidates (if (and (featurep 'matlab-shell)
+				(matlab-shell-active-p)
+				matlab-shell-ask-MATLAB-for-completions)
+			   (apply 'append (cdr (assoc 'completions
+						      (matlab-shell-completion-list prefix)))))
+		       "")
+	  ('sorted t)
+	  )))
+    )
+
+  (add-hook 'matlab-mode-hook
+	    (lambda () (add-to-list 'company-backends 'mymatc)))
+#+end_src
+** Python
+You need to install the following from pip:
++ 'python-language-server[all]'
++ python-lsp-server
++ debugpy
+  Ensure "/home/nbalaji/.local/bin" is added to path.
+#+begin_src emacs-lisp :tangle yes
+  (use-package python-mode
+    :ensure t
+    :hook (python-mode . lsp-deferred)
+    :custom
+    ;; NOTE: Set these if Python 3 is called "python3" on your system!
+    ;; (python-shell-interpreter "python3")
+    ;; (dap-python-executable "python3")
+    (dap-python-debugger 'debugpy)
+    :bind (:map python-mode-map
+		("C-<tab>" . yas-expand))
+    )
+
+  (use-package company
+    :after lsp-mode
+    :hook (lsp-mode . company-mode)
+    :bind (:map company-active-map
+	   ("<tab>" . company-complete-selection))
+	  (:map lsp-mode-map
+	   ("<tab>" . company-indent-or-complete-common))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
+
+  (use-package company-box
+    :hook (company-mode . company-box-mode))
+
+
+  (use-package projectile
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'ivy))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    ;; NOTE: Set this to the folder where you keep your Git repos!
+    (when (file-directory-p "~/Projects/Code")
+      (setq projectile-project-search-path '("~/Projects/Code")))
+    (setq projectile-switch-project-action #'projectile-dired))
+
+  (use-package counsel-projectile
+    :config (counsel-projectile-mode))
+
+  (use-package lsp-ui
+    :commands lsp-ui-mode)
+
+  (use-package lsp-mode
+    :config
+    (lsp-register-custom-settings
+     '(("pyls.plugins.pyls_mypy.enabled" t t)
+       ("pyls.plugins.pyls_mypy.live_mode" nil t)
+       ("pyls.plugins.pyls_black.enabled" t t)
+       ("pyls.plugins.pyls_isort.enabled" t t)))
+    :hook
+    ((python-mode . lsp)))
+#+end_src
+** RealGUD
+[[https://github.com/realgud/realgud][RealGUD]] is an emacs "frontend" for debugging. It works with all the classic tools (Python, C/C++, FORTRAN, etc.).
+MATLAB debugging is built into matlab-mode above. 
+#+begin_src emacs-lisp :tangle yes
+  (use-package realgud)
+#+end_src
+* Miscellanies
+** OpenFOAM
+[[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package 
+#+begin_src emacs-lisp :tangle yes
+  (use-package openfoam)
+#+end_src
+* Init File Stuff
+** Tangle init org file
+#+begin_src emacs-lisp :tangle yes
+  (defun tangle-init ()
+    "If the current buffer is =init.org= the code-blocks are
+  tangled, and the tangled file is compiled."
+    (when (equal (buffer-file-name)
+                 (expand-file-name (concat user-emacs-directory "config.org")))
+      ;; Avoid running hooks when tangling.
+      (let ((prog-mode-hook nil))
+        (org-babel-tangle)
+        (byte-compile-file (concat user-emacs-directory "config.el")))))
+
+  (add-hook 'after-save-hook 'tangle-init)
+#+end_src
+** Open init file by default
+#+begin_src emacs-lisp :tangle yes
+  (setq startdir default-directory)
+  (find-file "~/.emacs.d/config.org")
+  (dired startdir)
+#+end_src
+
+* Some inspiring Emacs quotes ;-)
+** Neal Stephenson, In the Beginning was the Command Line (1998)
+#+BEGIN_QUOTE
+Emacs outshines all other editing software in approximately the same way that
+the noonday sun does the stars. It is not just bigger and brighter; it simply
+makes everything else vanish.
+#+END_QUOTE
+** Richard Stallman
+#+BEGIN_QUOTE
+When large numbers of nontechnical workers are using a programmable
+editor, they will be tempted constantly to begin programming in the
+course of their day-to-day lives. This should contribute greatly to
+computer literacy, especially because many of the people thus exposed
+will be secretaries taught by society that they are incapable of doing
+mathematics, and unable to imagine for a moment that they can learn to
+program. But that won't stop them from learning it if they don't know
+that it is programming that they are learning!
+#+END_QUOTE
+#+BEGIN_QUOTE
+EMACS could not have been reached by a process of careful design,
+because such processes arrive only at goals which are visible at
+the outset, and whose desirability is established on the bottom
+line at the outset. Neither I nor anyone else visualized an
+extensible editor until I had made one, nor appreciated its value
+until he had experienced it. EMACS exists because I felt free to
+make individually useful small improvements on a path whose end
+was not in sight.
+#+END_QUOTE

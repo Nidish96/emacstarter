@@ -1,0 +1,14 @@
+/auto-save-list/
+/config.el
+*.elc
+*.emacs_lisp
+*~
+/elpa/
+/org-clock-save.el
+*.db
+*.eld
+/quelpa/
+/recentf
+/tramp
+/transient/
+/.lsp-session-v1
