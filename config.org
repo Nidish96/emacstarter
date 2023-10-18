@@ -28,6 +28,33 @@ This is a basic config file I'm creating to make it easy to start with emacs.
   (use-package quelpa-use-package
     :ensure t)
 #+end_src
+* Minor Conveniences
+#+begin_src emacs-lisp :tangle yes
+  ;; Use y or n instead of yes or no
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; Miscellaneous Shortcuts
+  (global-set-key (kbd "C-c C-x c") 'comment-region)
+  (global-set-key (kbd "C-c C-x u") 'uncomment-region)
+  (global-set-key (kbd "M-s M-s") 'shell-script-mode)
+  (global-set-key (kbd "M-s RET") 'ansi-term)
+  (global-set-key (kbd "C-x t") 'transpose-frame)
+  (global-set-key (kbd "C-x c") 'compile)
+  (global-set-key (kbd "C-x p") (lambda () (interactive) (other-window -1)))
+  (global-set-key (kbd "C-x O") 'next-multiframe-window)
+  (global-set-key (kbd "C-c C-x k") 'kill-emacs)
+  (global-set-key [f8] 'neotree-toggle)
+  (global-set-key (kbd "C-x B") 'ibuffer)
+
+  (define-key emacs-lisp-mode-map (kbd "C-c C-e") 'eval-region)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
+#+end_src
+** Multi-Cursors Mode
+#+begin_src emacs-lisp :tangle yes
+  (use-package multiple-cursors
+    :config
+    (global-set-key (kbd "C-x m") 'mc/edit-lines))
+#+end_src
 * Utilities
 ** Helm
 [[https://emacs-helm.github.io/helm/][Helm]] is an incremental completion framework for improving the file and directory navigation.
@@ -422,8 +449,7 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
     (matlab-navigation-syntax
       (let* ((common-substr-start-pt (save-excursion (forward-word -1) (point)))
 	     (common-substr-end-pt (point))
-	     (prefix (if (member (preceding-char) '(?  ?\t ?\n ?, ?\( ?\[ ?\' ?\; ?\) ))
-			 ""
+	     (prefix (unless (member (preceding-char) '(?  ?\t ?\n ?, ?\( ?\[ ?\' ?\; ?\) ))
 		       (buffer-substring-no-properties
 			common-substr-start-pt common-substr-end-pt)))
 	     )
@@ -431,13 +457,17 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
 	  ('interactive (if (fboundp 'company-begin-backend) ;; quiet warning when no company
 			    (company-begin-backend 'mymatc)
 			  (error "company-begin-backend is missing")))
-	  ('prefix (when (eq major-mode 'matlab-mode) prefix))
-	  ('candidates (if (and (featurep 'matlab-shell)
-				(matlab-shell-active-p)
-				matlab-shell-ask-MATLAB-for-completions)
+	  ('prefix (when (and (eq major-mode 'matlab-mode)
+			      (featurep 'matlab-shell)
+			      (matlab-shell-active-p)
+			      matlab-shell-ask-MATLAB-for-completions)
+		     prefix))
+	  ('candidates (when (and (eq major-mode 'matlab-mode)
+			      (featurep 'matlab-shell)
+			      (matlab-shell-active-p)
+			      matlab-shell-ask-MATLAB-for-completions)
 			   (apply 'append (cdr (assoc 'completions
-						      (matlab-shell-completion-list prefix)))))
-		       "")
+						      (matlab-shell-completion-list prefix))))))
 	  ('sorted t)
 	  )))
     )
@@ -512,6 +542,14 @@ You need to install the following from pip:
 MATLAB debugging is built into matlab-mode above. 
 #+begin_src emacs-lisp :tangle yes
   (use-package realgud)
+#+end_src
+** C/C++
+#+begin_src emacs-lisp :tangle yes
+  (use-package cc-mode
+    :bind (:map c-mode-map
+	   ("C-c RET" . compile)
+	   :map c++-mode-map
+	   ("C-c RET" . compile)))
 #+end_src
 * Miscellanies
 ** OpenFOAM
