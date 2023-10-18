@@ -1,0 +1,21 @@
+#+TITLE: A Basic Emacs Configuration for Engineers
+
+This is a basic config file I'm creating to make it easy to start with emacs.
+It's actually a little more than just "basic". It should have most of the immediate needs for usage.
+
+* Instructions
+1. Ensure you have the latest emacs installed.
+2. Install some utilities for pdfs through
+   #+begin_src bash
+     # Almalinux
+     yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel
+
+     # Ubuntu
+     apt install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel
+   #+end_src
+3. Create a directory called "org-roam" in your home.
+   #+begin_src bash
+     mkdir ~/org-roam
+   #+end_src
+4. Clone the contents of this repository into your ~/.emacs.d folder.
+5. Fire up emacs 2-3 times to ensure everything is installed properly

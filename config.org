@@ -1,9 +1,7 @@
 #+TITLE: Basic Emacs Configuration
 #+LANGUAGE: en
 #+STARTUP: fold
-
-This is a basic config file I'm creating to make it easy to start with emacs.
-It's actually a little more than just "basic". It should have most of the immediate needs for usage.
+   
 
 * Load Package Repositories
 #+begin_src emacs-lisp :tangle yes
@@ -348,6 +346,15 @@ Also install [[https://mg.readthedocs.io/latexmk.html][latexmk]] for building.
       :config (company-auctex-init))
 #+end_src
 *** Pdf-Tools
+Pdf-Tools is a nice frontend for viewing pdfs in emacs.
+Ensure you install the following first
+#+begin_src bash
+  # Almalinux
+  yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel
+
+  # Ubuntu
+  apt install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel
+#+end_src
 #+begin_src emacs-lisp :tangle yes
   (use-package pdf-tools
       :hook ((pdf-view-mode . (lambda () (display-line-numbers-mode -1))))
