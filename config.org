@@ -3,6 +3,7 @@
 #+STARTUP: fold
 
 This is a basic config file I'm creating to make it easy to start with emacs.
+It's actually a little more than just "basic". It should have most of the immediate needs for usage.
 
 * Load Package Repositories
 #+begin_src emacs-lisp :tangle yes
