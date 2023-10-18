@@ -19,3 +19,13 @@ It's actually a little more than just "basic". It should have most of the immedi
    #+end_src
 4. Clone the contents of this repository into your ~/.emacs.d folder.
 5. Fire up emacs 2-3 times to ensure everything is installed properly
+
+* Usage Tips and Tricks
+1. Some files may not have extensions but you may still want them to open in a particular mode.
+   Add the following line at the beginning of the file for this
+   #+begin_src python
+     # -*- mode: <modename> -*-
+   #+end_src
+   The first character(s) can be any appropriate comment character.
+   Read [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html][the emacs documentation entry]] on this for more.
+
