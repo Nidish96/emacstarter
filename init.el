@@ -8,7 +8,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(multiple-cursors realgud yasnippet-capf yasnippet-snippets escalator org-roam dired-subtree ov org-bullets org-special-block-extras lsp-ui counsel-projectile projectile company-box python-mode matlab-mode cart quelpa-use-package pdf-tools magit iedit helm-swoop helm-ls-git crdt company-quickhelp company-auctex auctex-latexmk)))
+   '(csv-mode multiple-cursors realgud yasnippet-capf yasnippet-snippets escalator org-roam dired-subtree ov org-bullets org-special-block-extras lsp-ui counsel-projectile projectile company-box python-mode matlab-mode cart quelpa-use-package pdf-tools magit iedit helm-swoop helm-ls-git crdt company-quickhelp company-auctex auctex-latexmk)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

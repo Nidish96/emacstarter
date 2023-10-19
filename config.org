@@ -565,6 +565,28 @@ MATLAB debugging is built into matlab-mode above.
 #+begin_src emacs-lisp :tangle yes
   (use-package openfoam)
 #+end_src
+** CSV Editing
+#+begin_src emacs-lisp :tangle yes
+  (use-package csv-mode
+    :config
+    (defun csv-highlight (&optional separator)
+      (interactive (list (when current-prefix-arg (read-char "Separator: "))))
+      (font-lock-mode 1)
+      (let* ((separator (or separator ?\,))
+	     (n (count-matches (string separator) (point-at-bol) (point-at-eol)))
+	     (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
+			   collect (apply #'color-rgb-to-hex 
+					  (color-hsl-to-rgb i 0.3 0.5)))))
+	(cl-loop for i from 2 to n by 2 
+	      for c in colors
+	      for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
+	      do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
+    :hook ((csv-mode . csv-highlight)
+	   (csv-mode . csv-align-mode)
+	   (csv-mode . (lambda () (interactive) (toggle-truncate-lines nil)))
+	   )
+    )
+#+end_src
 * Init File Stuff
 ** Tangle init org file
 #+begin_src emacs-lisp :tangle yes

@@ -34,5 +34,4 @@ It's actually a little more than just "basic". It should have most of the immedi
    Read [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html][the emacs documentation entry]] on this for more.
 
 * More Packages to add
-1. A major mode for csv files.
-2. Live plotting capabilities (possibly linked to some data files)? (Should be achievable with gnuplot)
+1. Live plotting capabilities (possibly linked to some data files)? (Should be achievable with gnuplot)
