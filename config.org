@@ -19,7 +19,7 @@
 	  use-package-expand-minimally t))
 #+end_src
 ** Quelpa
-[[https://github.com/quelpa/quelpa][Quelpa]] is an emacs package installer that allows you to directly install from github.
+[[https://github.com/quelpa/quelpa][Quelpa]] is an emacs package installer that allows you to directly install from web sources.
 [[https://github.com/quelpa/quelpa-use-package][Quelpa-use-package]] is a package that allows use-package to install through quelpa.
 #+begin_src emacs-lisp :tangle yes
   (use-package quelpa
@@ -146,7 +146,7 @@
   (use-package dired-subtree
     :hook ((dired-mode . dired-hide-details-mode))
     :bind (:map dired-mode-map
-	   ("<tab>" . dired-subtree-toggle))
+                ("<tab>" . dired-subtree-toggle))
     )
 #+end_src
 * Org-mode
@@ -566,7 +566,7 @@ MATLAB debugging is built into matlab-mode above.
 #+end_src
 * Miscellanies
 ** OpenFOAM
-[[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package 
+[[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package for editing openfoam files.
 #+begin_src emacs-lisp :tangle yes
   (use-package openfoam)
 #+end_src
