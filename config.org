@@ -1,6 +1,6 @@
 #+TITLE: Basic Emacs Configuration
 #+LANGUAGE: en
-#+STARTUP: fold
+#+STARTUP: fold indent
    
 
 * Load Package Repositories
@@ -303,6 +303,11 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 							    ("Tasks"))))))
 
   (global-set-key (kbd "C-c n t") #'my/org-roam-capture-task)
+#+end_src
+** Org-tree-slide
+[[https://github.com/takaxp/org-tree-slide][org-tree-slide]] is a very nice presentation minor mode for presentations with org-mode.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-tree-slide)
 #+end_src
 * Integrated Development Environments
 ** Latex
