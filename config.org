@@ -1,6 +1,6 @@
 #+TITLE: Basic Emacs Configuration
 #+LANGUAGE: en
-#+STARTUP: fold
+#+STARTUP: fold indent
    
 
 * Load Package Repositories
@@ -19,7 +19,7 @@
 	  use-package-expand-minimally t))
 #+end_src
 ** Quelpa
-[[https://github.com/quelpa/quelpa][Quelpa]] is an emacs package installer that allows you to directly install from github.
+[[https://github.com/quelpa/quelpa][Quelpa]] is an emacs package installer that allows you to directly install from web sources.
 [[https://github.com/quelpa/quelpa-use-package][Quelpa-use-package]] is a package that allows use-package to install through quelpa.
 #+begin_src emacs-lisp :tangle yes
   (use-package quelpa
@@ -146,7 +146,7 @@
   (use-package dired-subtree
     :hook ((dired-mode . dired-hide-details-mode))
     :bind (:map dired-mode-map
-	   ("<tab>" . dired-subtree-toggle))
+                ("<tab>" . dired-subtree-toggle))
     )
 #+end_src
 * Org-mode
@@ -303,6 +303,11 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 							    ("Tasks"))))))
 
   (global-set-key (kbd "C-c n t") #'my/org-roam-capture-task)
+#+end_src
+** Org-tree-slide
+[[https://github.com/takaxp/org-tree-slide][org-tree-slide]] is a very nice presentation minor mode for presentations with org-mode.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-tree-slide)
 #+end_src
 * Integrated Development Environments
 ** Latex
@@ -561,9 +566,31 @@ MATLAB debugging is built into matlab-mode above.
 #+end_src
 * Miscellanies
 ** OpenFOAM
-[[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package 
+[[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package for editing openfoam files.
 #+begin_src emacs-lisp :tangle yes
   (use-package openfoam)
+#+end_src
+** CSV Editing
+#+begin_src emacs-lisp :tangle yes
+  (use-package csv-mode
+    :config
+    (defun csv-highlight (&optional separator)
+      (interactive (list (when current-prefix-arg (read-char "Separator: "))))
+      (font-lock-mode 1)
+      (let* ((separator (or separator ?\,))
+	     (n (count-matches (string separator) (point-at-bol) (point-at-eol)))
+	     (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
+			   collect (apply #'color-rgb-to-hex 
+					  (color-hsl-to-rgb i 0.3 0.5)))))
+	(cl-loop for i from 2 to n by 2 
+	      for c in colors
+	      for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
+	      do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
+    :hook ((csv-mode . csv-highlight)
+	   (csv-mode . csv-align-mode)
+	   (csv-mode . (lambda () (interactive) (toggle-truncate-lines nil)))
+	   )
+    )
 #+end_src
 * Init File Stuff
 ** Tangle init org file

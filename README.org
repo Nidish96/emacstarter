@@ -1,25 +1,70 @@
 #+TITLE: A Basic Emacs Configuration for Engineers
+#+startup: indent
 
 This is a basic config file I'm creating to make it easy to start with emacs.
 It's actually a little more than just "basic". It should have most of the immediate needs for usage.
 
 * Instructions
 1. Ensure you have the latest emacs installed.
-2. Install some utilities for pdfs through
+   This config is tested with *Emacs 29.1 on Ubuntu 23.10*.
+2. I'd recommend installing [[https://tug.org/texlive/][Texlive]] for compiling latex documents. Also install [[https://mg.readthedocs.io/latexmk.html][latexmk]] for compilation "on the fly".
+   The following is a recommended configuration for latexmk, which you can put in ~/.latexmkrc
+   #+begin_src bash
+     $pdf_mode = 1;
+     # For pdflatex
+     $pdflatex = 'pdflatex -synctex=1 -halt-on-error %O --shell-escape %S';
+
+     # Custom dependency and function for nomencl package 
+     add_cus_dep( 'nlo', 'nls', 0, 'makenlo2nls' );
+     sub makenlo2nls {
+     system( "makeindex -s nomencl.ist -o \"$_[0].nls\" \"$_[0].nlo\"" );
+     }
+     
+     $pdf_previewer = "cat > /dev/null";
+   #+end_src
+3. Install some utilities for pdfs through
    #+begin_src bash
      # Almalinux
      yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel
 
      # Ubuntu
-     apt install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel
+     apt install autoconf automake gcc libpng-dev make pkgconf libpoppler-dev libpoppler-glib-dev zlib1g-dev
    #+end_src
-3. Create a directory called "org-roam" in your home.
+4. Create a directory called "org-roam" in your home.
    #+begin_src bash
      mkdir ~/org-roam
    #+end_src
-4. Clone the contents of this repository into your ~/.emacs.d folder.
-5. Fire up emacs 2-3 times to ensure everything is installed properly
-
+5. Install python language servers with pip. pyenv setups are possible.
+   #+begin_src bash
+     pip install 'python-language-server[all]' python-lsp-server debugpy
+   #+end_src
+6. Clone the contents of this repository into your ~/.emacs.d folder.
+7. Fire up emacs 2-3 times to ensure everything is installed properly.
+* List of Features Included in Config
+The following are the list of features enabled by the config in addition to emacs defaults.
+1. Packages:
+   + The GNU and MELPA repositories are loaded.
+   + ~use-package~ is used for package management.
+   + ~quelpa~ and ~quelpa-use-package~ are installed to directly install from web sources.
+2. Utilities
+   + ~helm~ is installed as the navigation engine throughout.
+   + ~magit~ is installed as the front-end for git.
+   + ~yasnippet~ is installed for snippet expansion. A basic set of snippets are also installed.
+   + ~iedit~ is installed for editing multiple occurrences of the same string.
+   + ~company~ is installed as the completion framework.
+   + ~dired-subtree~ is installed for directory navigation.
+3. Org-Mode Ecosystem
+   + The look and feel of org files is improved with fancy bullets and colors
+   + Org roam is installed as a personal knowledge management system
+   + Org tree slide is installed for presenting org files
+4. Programming/Development IDEs
+   + A Latex IDE is setup using ~AucTeX~ and ~pdf-tools~
+   + A MATLAB IDE is setup using ~matlab-mode~
+   + A Python IDE is setup using the Language Server Protocol (LSP).
+5. Miscellanies
+   + The ~openfoam~ package is installed for editing openfoam input files.
+   + ~csv-mode~ is installed to work with csv files.
+6. The whole config is written in an org file that is automatically tangled into elisp code. This makes it easier to maintain the emacs config.
 * Usage Tips and Tricks
 1. Some files may not have extensions but you may still want them to open in a particular mode.
    Add the following line at the beginning of the file for this
@@ -28,4 +73,5 @@ It's actually a little more than just "basic". It should have most of the immedi
    #+end_src
    The first character(s) can be any appropriate comment character.
    Read [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html][the emacs documentation entry]] on this for more.
-
+* More Packages to add
+1. Live plotting capabilities (possibly linked to some data files)? (Should be achievable with gnuplot)
