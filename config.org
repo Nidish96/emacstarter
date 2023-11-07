@@ -249,11 +249,19 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 	     (my/org-roam-filter-by-tag tag-name)
 	     (org-roam-node-list))))
 
+  ;; (defun my/org-roam-refresh-agenda-list ()
+  ;;   (interactive)
+  ;;   (setq org-agenda-files (append
+  ;; 			  (my/org-roam-list-notes-by-tag "Project")
+  ;; 			  (my/org-roam-list-notes-by-tag "Life"))))
+
+  ;; Make org-agenda work with non org-roam files also
   (defun my/org-roam-refresh-agenda-list ()
-    (interactive)
-    (setq org-agenda-files (append
-			    (my/org-roam-list-notes-by-tag "Project")
-			    (my/org-roam-list-notes-by-tag "Life"))))
+      (interactive)
+      (setq org-agenda-files (delete-dups
+			      (append org-agenda-files
+				      (my/org-roam-list-notes-by-tag "Project")
+				      (my/org-roam-list-notes-by-tag "Life")))))
 
   ;; Build the agenda list the first time for the session
   (my/org-roam-refresh-agenda-list)
