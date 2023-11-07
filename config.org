@@ -317,6 +317,36 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-tree-slide)
 #+end_src
+** Org-Capture
+#+begin_src emacs-lisp :tangle yes
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+  (defun my/org-local-get-target ()
+    (if (boundp 'org-local-notes-file)
+        (expand-file-name org-local-notes-file)
+      (if (y-or-n-p "A local org note doesn't exist. Create/choose one? ")
+          (progn
+            (add-dir-local-variable
+             nil 'org-local-notes-file
+             (read-file-name "Create/choose local org notes file:"))
+            (save-buffer) (kill-buffer)
+            (hack-dir-local-variables-non-file-buffer)
+            (when (y-or-n-p "Add it to global agenda?")
+              (add-to-list 'org-agenda-files org-local-notes-file))
+            org-local-notes-file)
+        org-default-notes-file)))
+
+  ;; set variable org-local-notes-file locally
+  (setq org-capture-templates
+        '(("t" "Todo" entry (file+headline "~/org/notes.org" "Tasks")
+           "* TODO %?\n Dated: %u\n Location: %a")
+          ("j" "Journal" entry (file+datetree "~/org/journal.org")
+           "* %?\nEntered on %U\n  %i\n  Location: %a")
+          ("l" "Local Tasks" entry (file+headline my/org-local-get-target
+                                                  "Local")
+           "* TODO %?\n Dated: %u\n Location: %a")
+          ))
+#+end_src
 * Integrated Development Environments
 ** Latex
 It is necessary to have a latex installation (Texlive is recommended, but MikTeX should also work).

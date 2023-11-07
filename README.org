@@ -57,6 +57,7 @@ The following are the list of features enabled by the config in addition to emac
    + The look and feel of org files is improved with fancy bullets and colors
    + Org roam is installed as a personal knowledge management system
    + Org tree slide is installed for presenting org files
+   + A useful "local" capture template for org-agenda is included
 4. Programming/Development IDEs
    + A Latex IDE is setup using ~AucTeX~ and ~pdf-tools~
    + A MATLAB IDE is setup using ~matlab-mode~
