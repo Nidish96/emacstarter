@@ -544,6 +544,7 @@ You need to install the following from pip:
     :bind (:map python-mode-map
                 ("C-<tab>" . yas-expand))
     )
+  (use-package flycheck)
 
   (use-package company
     :after lsp-mode
@@ -593,7 +594,7 @@ You need to install the following from pip:
     "Run the current block"
     (interactive)
     (let ((p0 (save-excursion (or (re-search-backward "^\s*#" (point-min) t) (point-min))))
-          (p1 (save-excursion (or (re-search-forward "^\s*#" (point-max) t) (point-min)))))
+          (p1 (save-excursion (or (re-search-forward "^\s*#" (point-max) t) (point-max)))))
       (python-shell-send-region p0 p1)
       (goto-char p1) (next-line))
     )
