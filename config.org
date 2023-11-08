@@ -542,16 +542,16 @@ You need to install the following from pip:
     ;; (dap-python-executable "python3")
     (dap-python-debugger 'debugpy)
     :bind (:map python-mode-map
-		("C-<tab>" . yas-expand))
+                ("C-<tab>" . yas-expand))
     )
 
   (use-package company
     :after lsp-mode
     :hook (lsp-mode . company-mode)
     :bind (:map company-active-map
-	   ("<tab>" . company-complete-selection))
-	  (:map lsp-mode-map
-	   ("<tab>" . company-indent-or-complete-common))
+           ("<tab>" . company-complete-selection))
+          (:map lsp-mode-map
+           ("<tab>" . company-indent-or-complete-common))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -587,6 +587,18 @@ You need to install the following from pip:
        ("pyls.plugins.pyls_isort.enabled" t t)))
     :hook
     ((python-mode . lsp)))
+
+  ;; Run blocks like in MATLAB. Needs work.
+  (defun my/python-run-block ()
+    "Run the current block"
+    (interactive)
+    (let ((p0 (save-excursion (or (re-search-backward "^\s*#" (point-min) t) (point-min))))
+          (p1 (save-excursion (or (re-search-forward "^\s*#" (point-max) t) (point-min)))))
+      (python-shell-send-region p0 p1)
+      (goto-char p1) (next-line))
+    )
+
+  (define-key python-mode-map (kbd "C-<return>") 'my/python-run-block)
 #+end_src
 ** RealGUD
 [[https://github.com/realgud/realgud][RealGUD]] is an emacs "frontend" for debugging. It works with all the classic tools (Python, C/C++, FORTRAN, etc.).
