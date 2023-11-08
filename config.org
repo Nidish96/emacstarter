@@ -550,9 +550,9 @@ You need to install the following from pip:
     :after lsp-mode
     :hook (lsp-mode . company-mode)
     :bind (:map company-active-map
-           ("<tab>" . company-complete-selection))
-          (:map lsp-mode-map
-           ("<tab>" . company-indent-or-complete-common))
+                ("<tab>" . company-complete-selection))
+    (:map lsp-mode-map
+          ("<tab>" . company-indent-or-complete-common))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -589,17 +589,36 @@ You need to install the following from pip:
     :hook
     ((python-mode . lsp)))
 
-  ;; Run blocks like in MATLAB. Needs work.
+  ;; Custom Stuff
+  (setq my/python-block-head-string "^\s*####")
+
   (defun my/python-run-block ()
     "Run the current block"
     (interactive)
-    (let ((p0 (save-excursion (or (re-search-backward "^\s*#" (point-min) t) (point-min))))
-          (p1 (save-excursion (or (re-search-forward "^\s*#" (point-max) t) (point-max)))))
+    (let ((p0 (save-excursion (or (re-search-backward my/python-block-head-string (point-min) t) (point-min))))
+          (p1 (save-excursion (or (re-search-forward my/python-block-head-string (point-max) t) (point-max)))))
       (python-shell-send-region p0 p1)
       (goto-char p1) (next-line))
     )
 
   (define-key python-mode-map (kbd "C-<return>") 'my/python-run-block)
+
+  (defun my/python-go-up-block ()
+    "Go up a block"
+    (interactive)
+    (or (re-search-backward my/python-block-head-string (point-min) t)
+        (goto-char (point-min)))
+    (previous-line))
+
+  (defun my/python-go-down-block ()
+    "Go down one block"
+    (interactive)
+    (or (re-search-forward my/python-block-head-string (point-max) t)
+        (goto-char (point-max)))
+    (next-line))
+
+  (define-key python-mode-map (kbd "M-v") 'my/python-go-up-block)
+  (define-key python-mode-map (kbd "C-v") 'my/python-go-down-block) 
 #+end_src
 ** RealGUD
 [[https://github.com/realgud/realgud][RealGUD]] is an emacs "frontend" for debugging. It works with all the classic tools (Python, C/C++, FORTRAN, etc.).
