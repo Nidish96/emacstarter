@@ -74,5 +74,9 @@ The following are the list of features enabled by the config in addition to emac
    #+end_src
    The first character(s) can be any appropriate comment character.
    Read [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html][the emacs documentation entry]] on this for more.
+2. To make tramp work with zsh shells, add the following to the beginning of you .zshrc file:
+   #+begin_src shell
+     [[ $TERM == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+   #+end_src
 * More Packages to add
 1. Live plotting capabilities (possibly linked to some data files)? (Should be achievable with gnuplot)
