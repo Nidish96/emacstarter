@@ -607,14 +607,14 @@ You need to install the following from pip:
     "Go up a block"
     (interactive)
     (or (re-search-backward my/python-block-head-string (point-min) t)
-        (goto-char (point-min)))
+        (scroll-up-command))
     (previous-line))
 
   (defun my/python-go-down-block ()
     "Go down one block"
     (interactive)
     (or (re-search-forward my/python-block-head-string (point-max) t)
-        (goto-char (point-max)))
+        (scroll-down-command))
     (next-line))
 
   (define-key python-mode-map (kbd "M-v") 'my/python-go-up-block)
