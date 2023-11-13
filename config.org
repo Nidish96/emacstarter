@@ -440,7 +440,7 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                                (if (re-search-forward "^\s*%%" nil t)
                                    (forward-line))))
                 ("C-M-<return>" . matlab-shell-run-region-or-line)
-                ("<f4>" . my-matlab-shell-locate-this-fcn)
+                ("M-." . my-matlab-shell-locate-this-fcn)
                 ("C-c RET" . (lambda () "Run Buffer"
                             (interactive)
                             (save-buffer)
@@ -455,7 +455,7 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                            (unless (re-search-backward "^\s*%%" nil t)
                              (scroll-down-command))
                            (forward-line -1)))
-                ("<f9>" . my-matlab-shell-run-region-or-line)
+                ("C-c C-r" . my-matlab-shell-run-region-or-line)
                 ("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
                 ("M-n" . (lambda () (interactive) (matlab-forward-sexp))))
     :config
