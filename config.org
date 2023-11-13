@@ -320,6 +320,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 ** Org-Capture
 #+begin_src emacs-lisp :tangle yes
   (setq org-default-notes-file (concat org-directory "/notes.org"))
+  (defvar org-local-notes-file)
 
   (defun my/org-local-get-target ()
     (if (boundp 'org-local-notes-file)
