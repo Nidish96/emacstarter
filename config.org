@@ -432,58 +432,63 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
   (use-package matlab
     :ensure matlab-mode
     :bind (:map matlab-mode-map
-		("C-<return>" . matlab-shell-run-cell)
-		("C-M-<return>" . matlab-shell-run-region-or-line)
-		("<f4>" . my-matlab-shell-locate-this-fcn)
-		("<f5>" . (lambda () "Run Buffer"
-			    (interactive)
-			    (save-buffer)
-			    (matlab-shell-send-command (file-name-base (buffer-file-name)))))
-		("C-v" . (lambda ()
-			   (interactive)
-			   (unless (search-forward "\n%%" nil t)
-			     (search-forward "%%" nil t))))
-		("M-v" . (lambda ()
-			   (interactive)
-			   (unless (search-backward "\n%%" nil t)
-			     (search-backward "%%" nil t))))
-		("<f9>" . my-matlab-shell-run-region-or-line)
-		("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
-		("M-n" . (lambda () (interactive) (matlab-forward-sexp))))
+                ("C-c C-b" . (lambda () (interactive)
+                               (matlab-shell-run-cell)
+                               (if (re-search-forward "^\s*%%" nil t)
+                                   (forward-line))))
+                ("C-M-<return>" . matlab-shell-run-region-or-line)
+                ("<f4>" . my-matlab-shell-locate-this-fcn)
+                ("<f5>" . (lambda () "Run Buffer"
+                            (interactive)
+                            (save-buffer)
+                            (matlab-shell-send-command (file-name-base (buffer-file-name)))))
+                ("C-v" . (lambda ()
+                           (interactive)
+                           (unless (re-search-forward "^\s*%%" nil t)
+                             (scroll-up-command))
+                           (forward-line)))
+                ("M-v" . (lambda ()
+                           (interactive)
+                           (unless (re-search-backward "^\s*%%" nil t)
+                             (scroll-down-command))
+                           (forward-line -1)))
+                ("<f9>" . my-matlab-shell-run-region-or-line)
+                ("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
+                ("M-n" . (lambda () (interactive) (matlab-forward-sexp))))
     :config
     (defun my-matlab-shell-locate-this-fcn (&optional fcn)
       "Run \"which FCN\" in the `matlab-shell', then open the file."
       (interactive)
       (let* ((fcn (or fcn (matlab-read-word-at-point)))
-	     (file (matlab-shell-which-fcn fcn)))
-	(if file
-	    (find-file (car file))
-	  (error "Command which('%s') returned empty" fcn))))
+             (file (matlab-shell-which-fcn fcn)))
+        (if file
+            (find-file (car file))
+          (error "Command which('%s') returned empty" fcn))))
 
     (defun my-matlab-shell-run-region-or-line ()
       "Send region or line as command to matlab shell"
       (interactive)
       (let ((p0) (p1))
-	(if (region-active-p)
-	    (progn
-	      (setq p0 (region-beginning))
-	      (setq p1 (region-end)))
-	  (setq p0 (line-beginning-position))
-	  (setq p1 (line-end-position)))
-	(matlab-shell-send-command (buffer-substring p0 p1))))
+        (if (region-active-p)
+            (progn
+              (setq p0 (region-beginning))
+              (setq p1 (region-end)))
+          (setq p0 (line-beginning-position))
+          (setq p1 (line-end-position)))
+        (matlab-shell-send-command (buffer-substring p0 p1))))
     )
   (add-hook 'matlab-mode-hook
-	    (defun baba-outline-matlab ()
-	      "Fold definitions in Matlab."
-	      (setq outline-regexp
-		    (rx (or
-			 (group
-			  (group (* space))
-			  bow
-			  (or "classdef" "function" "properties" "methods"
-			      "for" "if" "switch" "case" "while" "end" "%%")
-			  eow))))
-	      ))
+            (defun baba-outline-matlab ()
+              "Fold definitions in Matlab."
+              (setq outline-regexp
+                    (rx (or
+                         (group
+                          (group (* space))
+                          bow
+                          (or "classdef" "function" "properties" "methods"
+                              "for" "if" "switch" "case" "while" "end" "%%")
+                          eow))))
+              ))
 
   (set-display-table-slot
    standard-display-table
@@ -499,32 +504,32 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
     ;; Try to do completion with the shell
     (matlab-navigation-syntax
       (let* ((common-substr-start-pt (save-excursion (forward-word -1) (point)))
-	     (common-substr-end-pt (point))
-	     (prefix (unless (member (preceding-char) '(?  ?\t ?\n ?, ?\( ?\[ ?\' ?\; ?\) ))
-		       (buffer-substring-no-properties
-			common-substr-start-pt common-substr-end-pt)))
-	     )
-	(cl-case cmd
-	  ('interactive (if (fboundp 'company-begin-backend) ;; quiet warning when no company
-			    (company-begin-backend 'mymatc)
-			  (error "company-begin-backend is missing")))
-	  ('prefix (when (and (eq major-mode 'matlab-mode)
-			      (featurep 'matlab-shell)
-			      (matlab-shell-active-p)
-			      matlab-shell-ask-MATLAB-for-completions)
-		     prefix))
-	  ('candidates (when (and (eq major-mode 'matlab-mode)
-			      (featurep 'matlab-shell)
-			      (matlab-shell-active-p)
-			      matlab-shell-ask-MATLAB-for-completions)
-			   (apply 'append (cdr (assoc 'completions
-						      (matlab-shell-completion-list prefix))))))
-	  ('sorted t)
-	  )))
+             (common-substr-end-pt (point))
+             (prefix (unless (member (preceding-char) '(?  ?\t ?\n ?, ?\( ?\[ ?\' ?\; ?\) ))
+                       (buffer-substring-no-properties
+                        common-substr-start-pt common-substr-end-pt)))
+             )
+        (cl-case cmd
+          (interactive (if (fboundp 'company-begin-backend) ;; quiet warning when no company
+                            (company-begin-backend 'mymatc)
+                          (error "company-begin-backend is missing")))
+          (prefix (when (and (eq major-mode 'matlab-mode)
+                              (featurep 'matlab-shell)
+                              (matlab-shell-active-p)
+                              matlab-shell-ask-MATLAB-for-completions)
+                     prefix))
+          (candidates (when (and (eq major-mode 'matlab-mode)
+                              (featurep 'matlab-shell)
+                              (matlab-shell-active-p)
+                              matlab-shell-ask-MATLAB-for-completions)
+                           (apply 'append (cdr (assoc 'completions
+                                                      (matlab-shell-completion-list prefix))))))
+          (sorted t)
+          )))
     )
 
   (add-hook 'matlab-mode-hook
-	    (lambda () (add-to-list 'company-backends 'mymatc)))
+            (lambda () (add-to-list 'company-backends 'mymatc)))
 #+end_src
 ** Python
 You need to install the following from pip:
@@ -598,24 +603,24 @@ You need to install the following from pip:
     (let ((p0 (save-excursion (or (re-search-backward my/python-block-head-string (point-min) t) (point-min))))
           (p1 (save-excursion (or (re-search-forward my/python-block-head-string (point-max) t) (point-max)))))
       (python-shell-send-region p0 p1)
-      (goto-char p1) (next-line))
+      (goto-char p1) (forward-line))
     )
 
-  (define-key python-mode-map (kbd "C-<return>") 'my/python-run-block)
+  (define-key python-mode-map (kbd "C-c C-b") 'my/python-run-block)
 
   (defun my/python-go-up-block ()
     "Go up a block"
     (interactive)
     (or (re-search-backward my/python-block-head-string (point-min) t)
         (scroll-up-command))
-    (previous-line))
+    (forward-line -1))
 
   (defun my/python-go-down-block ()
     "Go down one block"
     (interactive)
     (or (re-search-forward my/python-block-head-string (point-max) t)
         (scroll-down-command))
-    (next-line))
+    (forward-line))
 
   (define-key python-mode-map (kbd "M-v") 'my/python-go-up-block)
   (define-key python-mode-map (kbd "C-v") 'my/python-go-down-block) 
@@ -648,7 +653,7 @@ MATLAB debugging is built into matlab-mode above.
       (interactive (list (when current-prefix-arg (read-char "Separator: "))))
       (font-lock-mode 1)
       (let* ((separator (or separator ?\,))
-	     (n (count-matches (string separator) (point-at-bol) (point-at-eol)))
+	     (n (count-matches (string separator) (pos-bol) (pos-eol)))
 	     (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
 			   collect (apply #'color-rgb-to-hex 
 					  (color-hsl-to-rgb i 0.3 0.5)))))
