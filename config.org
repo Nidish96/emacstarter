@@ -147,8 +147,9 @@
   (use-package dired-subtree
     :hook ((dired-mode . dired-hide-details-mode))
     :bind (:map dired-mode-map
-                ("<tab>" . dired-subtree-toggle))
+                ("C-j" . dired-subtree-toggle))
     )
+  ;; C-x C-q is wdired mode
 #+end_src
 * Org-mode
 Org mode is Emacs' own markdown environment. It's extremely powerful.
@@ -435,12 +436,12 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
     :ensure matlab-mode
     :bind (:map matlab-mode-map
                 ("C-c C-b" . (lambda () (interactive)
-                               (matlab-shell-run-cell)
+                               (save-excursion (matlab-shell-run-cell))
                                (if (re-search-forward "^\s*%%" nil t)
                                    (forward-line))))
                 ("C-M-<return>" . matlab-shell-run-region-or-line)
                 ("<f4>" . my-matlab-shell-locate-this-fcn)
-                ("<f5>" . (lambda () "Run Buffer"
+                ("C-c RET" . (lambda () "Run Buffer"
                             (interactive)
                             (save-buffer)
                             (matlab-shell-send-command (file-name-base (buffer-file-name)))))
