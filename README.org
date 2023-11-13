@@ -80,5 +80,24 @@ The following are the list of features enabled by the config in addition to emac
    #+begin_src shell
      [[ $TERM == "dumb" ]] && unsetopt zle && PS1='$ ' && return
    #+end_src
+3. You can bind the following shell script to a keybinding (I like using =Ctrl-Alt-e=) to conditionally launch an emacs client with the daemon (or create a new daemon if it doesn't already exist).
+   #+begin_src shell
+     #!/usr/bin/sh
+
+     emacsclient -c
+     if [ $? -ne 0 ]; then
+         emacs --daemon
+         emacsclient -c
+     fi
+   #+end_src
+
+
+
+
+
+
+
+
+
 * More Packages to add
 1. Live plotting capabilities (possibly linked to some data files)? (Should be achievable with gnuplot)

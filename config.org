@@ -109,12 +109,13 @@
 ** Yasnippet
 [[https://github.com/joaotavora/yasnippet][Yasnippet]] is a template expansion framework in emacs. It defines convenient templates that can get expanded.
 #+begin_src emacs-lisp :tangle yes
-    (use-package yasnippet
-      :config (yas-global-mode 1)
-      (advice-add 'yas--auto-fill-wrapper :override #'ignore))
+  (use-package yasnippet
+    :config (yas-global-mode 1)
+    (setq yas-indent-line 'fixed)
+    (advice-add 'yas--auto-fill-wrapper :override #'ignore))
 
-    (use-package yasnippet-snippets)
-    (use-package yasnippet-capf)
+  (use-package yasnippet-snippets)
+  (use-package yasnippet-capf)
 #+end_src
 ** Iedit
 [[https://github.com/victorhge/iedit][Iedit]] allows editing multiple occurrences of a string in a buffer.
