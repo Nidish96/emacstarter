@@ -11,7 +11,7 @@
  '(dired-listing-switches "-alXGh --group-directories-first")
  '(org-agenda-files nil)
  '(package-selected-packages
-   '(csv-mode org-tree-slide multiple-cursors realgud yasnippet-capf yasnippet-snippets escalator org-roam dired-subtree ov org-bullets org-special-block-extras lsp-ui counsel-projectile projectile company-box python-mode matlab-mode cart quelpa-use-package pdf-tools magit iedit helm-swoop helm-ls-git crdt company-quickhelp company-auctex auctex-latexmk))
+   '(winum csv-mode org-tree-slide multiple-cursors realgud yasnippet-capf yasnippet-snippets escalator org-roam dired-subtree ov org-bullets org-special-block-extras lsp-ui counsel-projectile projectile company-box python-mode matlab-mode cart quelpa-use-package pdf-tools magit iedit helm-swoop helm-ls-git crdt company-quickhelp company-auctex auctex-latexmk))
  '(pixel-scroll-precision-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

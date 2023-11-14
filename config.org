@@ -151,6 +151,14 @@
     )
   ;; C-x C-q is wdired mode
 #+end_src
+** Winum mode
+This assigns a number to each window.
+For quickly switching to window "n", just use =C-x w <n>=, where =<n>= is the window number.
+Very useful for multi monitor, multi frame workflow.
+#+begin_src emacs-lisp :tangle yes
+  (use-package winum
+    :config (winum-mode))
+#+end_src
 * Org-mode
 Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
