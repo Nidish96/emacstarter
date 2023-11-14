@@ -1,7 +1,11 @@
 #+TITLE: A Basic Emacs Configuration for Engineers
 #+startup: indent
 
-This is a basic config file I'm creating to make it easy to start with emacs.
+#+caption: Figure generate using DALL-E 3 and Playground AI (original idea from Daniel Fochler)
+[[./ewokswemacs.png]]
+
+
+This is a basic config file we've created to make it easy to start with emacs.
 It's actually a little more than just "basic". It should have most of the immediate needs for usage.
 
 * Instructions
