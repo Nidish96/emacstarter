@@ -441,7 +441,7 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                                    (forward-line))))
                 ("C-M-<return>" . matlab-shell-run-region-or-line)
                 ("M-." . my-matlab-shell-locate-this-fcn)
-                ("C-c RET" . (lambda () "Run Buffer"
+                ("C-c <return>" . (lambda () "Run Buffer"
                             (interactive)
                             (save-buffer)
                             (matlab-shell-send-command (file-name-base (buffer-file-name)))))
@@ -674,7 +674,7 @@ MATLAB debugging is built into matlab-mode above.
 ** Tangle init org file
 #+begin_src emacs-lisp :tangle yes
   (defun tangle-init ()
-    "If the current buffer is =init.org= the code-blocks are
+    "If the current buffer is =config.org= the code-blocks are
   tangled, and the tangled file is compiled."
     (when (equal (buffer-file-name)
                  (expand-file-name (concat user-emacs-directory "config.org")))
