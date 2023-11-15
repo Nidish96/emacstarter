@@ -544,6 +544,31 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
   (add-hook 'matlab-mode-hook
             (lambda () (add-to-list 'company-backends 'mymatc)))
 #+end_src
+*** Own Latex
+Add code which helps to navigate through tex files
+#+begin_src emacs-lisp :tangle yes
+  (setq my/latex-section-head-string "^\s*\\\\section")
+
+  (defun my/latex-go-up-section ()
+    "Go up a section"
+    (interactive)
+    (or (re-search-backward my/latex-section-head-string (point-min) t) (goto-char (point-min)))
+    (previous-line))
+
+  (defun my/latex-go-down-section ()
+    "Go down one section"
+    (interactive)
+    (or (re-search-forward my/latex-section-head-string (point-max) t) (goto-char (point-max)))
+    (next-line)
+    (next-line))
+
+  (define-key LaTeX-mode-map (kbd "M-v") 'my/latex-go-up-section)
+  (define-key LaTeX-mode-map (kbd "C-v") 'my/latex-go-down-section)
+#+end_src
+
+#+RESULTS:
+: my/latex-go-down-section
+
 ** Python
 You need to install the following from pip:
 + 'python-language-server[all]'
