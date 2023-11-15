@@ -145,7 +145,8 @@
 ** Dired subtree
 #+begin_src emacs-lisp :tangle yes
   (use-package dired-subtree
-    :hook ((dired-mode . dired-hide-details-mode))
+    :hook ((dired-mode . dired-hide-details-mode)
+           (dired-mode . auto-revert-mode))
     :bind (:map dired-mode-map
                 ("C-j" . dired-subtree-toggle))
     )
