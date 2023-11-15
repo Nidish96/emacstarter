@@ -328,7 +328,8 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-tree-slide)
 #+end_src
-** Org-Capture
+** Org-Capute
+[[https://orgmode.org/manual/Capture.html][Org Capture]] is a package to easily store notes with little interruption of work flow
 #+begin_src emacs-lisp :tangle yes
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (defvar org-local-notes-file)
@@ -609,6 +610,7 @@ You need to install the following from pip:
   ;; Custom Stuff
   (setq my/python-block-head-string "^\s*####")
 
+  ;; Custom stuff for python blocks
   (defun my/python-run-block ()
     "Run the current block"
     (interactive)
@@ -678,6 +680,11 @@ MATLAB debugging is built into matlab-mode above.
 	   (csv-mode . (lambda () (interactive) (toggle-truncate-lines nil)))
 	   )
     )
+#+end_src
+** Rainbow Mode
+#+begin_src emacs-lisp :tangle yes
+  (use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 * Init File Stuff
 ** Tangle init org file
