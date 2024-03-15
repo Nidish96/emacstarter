@@ -160,6 +160,18 @@ Very useful for multi monitor, multi frame workflow.
   (use-package winum
     :config (winum-mode))
 #+end_src
+** EAT
+EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
+#+begin_src emacs-lisp :tangle yes
+  (quelpa '(eat :fetcher git
+                :url "https://codeberg.org/akib/emacs-eat"
+                :files ("*.el" ("term" "term/*.el") "*.texi"
+                        "*.ti" ("terminfo/e" "terminfo/e/*")
+                        ("terminfo/65" "terminfo/65/*")
+                        ("integration" "integration/*")
+                        (:exclude ".dir-locals.el" "*-tests.el"))))
+#+end_src
+
 * Org-mode
 Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
@@ -225,7 +237,21 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 
   ;; oer-reveal
   (use-package oer-reveal)
+
+  (use-package laas
+    :hook ((latex-mode . laas-mode)
+           (tex-mode . laas-mode)
+           (org-mode . laas-mode))
+    :config (aas-global-mode)
+    (aas-set-snippets 'laas-mode
+      :cond #'laas-object-on-left-condition
+      "tcr" (lambda () (interactive) (laas-wrap-previous-object "textcolor{red}")))
+    ) 
 #+end_src
+
+#+RESULTS:
+| laas-mode | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | (closure (t) nil (font-lock-add-keywords nil '((next-color-link (0 'org-link t))) t)) | (lambda nil (org-bullets-mode t)) | org-special-block-extras-mode | org-clock-load | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
+
 ** Org-Roam
 [[https://www.orgroam.com/][Org-Roam]] is based on the Zettelkasten note keeping technique, helping you thoughts and ideas.
 #+begin_src emacs-lisp :tangle yes
@@ -731,6 +757,18 @@ MATLAB debugging is built into matlab-mode above.
   (setq startdir default-directory)
   (find-file "~/.emacs.d/config.org")
   (dired startdir)
+#+end_src
+
+* Bug fixed
+#+begin_src emacs-lisp :tangle yes
+  (push (apply-partially #'cl-remove-if
+                         (lambda (c)
+                           (or (string-match-p "[^\x00-\x7F]+" c)
+                               (string-match-p "[0-9]+" c)
+                               (if (equal major-mode "org")
+                                   (>= (length c) 15)))))
+        company-transformers)
+
 #+end_src
 
 * Some inspiring Emacs quotes ;-)
