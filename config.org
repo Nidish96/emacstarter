@@ -264,10 +264,10 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
   (use-package org-roam
     :init (setq org-roam-v2-ack t)
     :bind (("C-c n l" . org-roam-buffer-toggle)
-	   ;; ("C-c n f" . org-roam-node-find)
-	   ("C-c n i" . org-roam-node-insert)
-	   :map org-mode-map
-	   ("C-M-i" . completion-at-point))
+           ;; ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point))
     :config
     (setq org-roam-directory (file-truename "~/org-roam"))
     (org-roam-db-autosync-mode)
@@ -277,7 +277,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 
   (use-package escalator
     :quelpa (escalator :fetcher github
-		       :repo "ag91/escalator")
+                       :repo "ag91/escalator")
     :bind (("C-c n f" . escalator-helm-org-roam))
     )
 
@@ -288,9 +288,9 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 
   (defun my/org-roam-list-notes-by-tag (tag-name)
     (mapcar #'org-roam-node-file
-	    (seq-filter
-	     (my/org-roam-filter-by-tag tag-name)
-	     (org-roam-node-list))))
+            (seq-filter
+             (my/org-roam-filter-by-tag tag-name)
+             (org-roam-node-list))))
 
   ;; (defun my/org-roam-refresh-agenda-list ()
   ;;   (interactive)
@@ -300,11 +300,11 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 
   ;; Make org-agenda work with non org-roam files also
   (defun my/org-roam-refresh-agenda-list ()
-      (interactive)
-      (setq org-agenda-files (delete-dups
-			      (append org-agenda-files
-				      (my/org-roam-list-notes-by-tag "Project")
-				      (my/org-roam-list-notes-by-tag "Life")))))
+    (interactive)
+    (setq org-agenda-files (delete-dups
+                            (append org-agenda-files
+                                    (my/org-roam-list-notes-by-tag "Project")
+                                    (my/org-roam-list-notes-by-tag "Life")))))
 
   ;; Build the agenda list the first time for the session
   (my/org-roam-refresh-agenda-list)
@@ -319,7 +319,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
     ;; Add project file to the agenda list if the capture was confirmed
     (unless org-note-abort
       (with-current-buffer (org-capture-get :buffer)
-	(add-to-list 'org-agenda-files (buffer-file-name)))))
+        (add-to-list 'org-agenda-files (buffer-file-name)))))
 
   (defun my/org-roam-find-project ()
     (interactive)
@@ -333,8 +333,8 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
      (my/org-roam-filter-by-tag "Project")
      :templates
      '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-	:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
-	:unnarrowed t))))
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+        :unnarrowed t))))
 
   (global-set-key (kbd "C-c n p") #'my/org-roam-find-project)
 
@@ -346,12 +346,12 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 
     ;; Capture the new task, creating the project file if necessary
     (org-roam-capture- :node (org-roam-node-read
-			      nil
-			      (my/org-roam-filter-by-tag "Project"))
-p		       :templates '(("p" "project" plain "* TODO %?"
-				     :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
-							    "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
-							    ("Tasks"))))))
+                              nil
+                              (my/org-roam-filter-by-tag "Project"))
+                       :templates '(("p" "project" plain "* TODO %?"
+                                     :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
+                                                            "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
+                                                            ("Tasks"))))))
 
   (global-set-key (kbd "C-c n t") #'my/org-roam-capture-task)
 #+end_src
