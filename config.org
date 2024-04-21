@@ -2,7 +2,9 @@
 #+LANGUAGE: en
 #+STARTUP: fold indent
    
-
+#+begin_src emacs-lisp :tangle yes
+  ;; -*- lexical-binding:t; -*-
+#+end_src
 * Load Package Repositories
 #+begin_src emacs-lisp :tangle yes
   (require 'package)
@@ -141,7 +143,11 @@
 		("C-<tab>" . outline-cycle)
 		("C-<iso-lefttab>" . outline-cycle-buffer)))
 #+end_src
-** Language Server Protocol
+** Dired+
+#+begin_src emacs-lisp :tangle yes
+  (use-package dired+
+    :load-path "~/.emacs.d/locpacks/dired+")
+#+end_src
 ** Dired subtree
 #+begin_src emacs-lisp :tangle yes
   (use-package dired-subtree
@@ -342,7 +348,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
     (org-roam-capture- :node (org-roam-node-read
 			      nil
 			      (my/org-roam-filter-by-tag "Project"))
-		       :templates '(("p" "project" plain "* TODO %?"
+p		       :templates '(("p" "project" plain "* TODO %?"
 				     :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
 							    "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
 							    ("Tasks"))))))
@@ -455,122 +461,7 @@ Ensure you install the following first
   (define-key TeX-mode-map (kbd "C-c M-v") 'pdf-sync-display-pdf)
   (define-key TeX-mode-map (kbd "C-c v") 'pdf-sync-forward-search)
 #+end_src
-*** CART
-[[https://github.com/Nidish96/cart.el][cart.el]] is an emacs package that allows you to enter calibrated coordinate-based tikz graphics elements into latex documents.
-Quite useful for beamer presentations.
-#+begin_src emacs-lisp :tangle yes
-  (use-package cart
-    :quelpa (cart :fetcher github
-		  :repo "Nidish96/cart.el")
-    :hook ((LaTeX-mode-hook . cart-mode)))
-#+end_src
-** Matlab
-[[https://matlab-emacs.sourceforge.net/index.shtml][Matlab-mode]] is an emacs mode for editing & running matlab scripts. You can launch an inferior shell, do debugging, etc.
-I've setup shortcuts to be identical to what we have with the matlab gui.
-#+begin_src emacs-lisp :tangle yes
-  (use-package matlab
-    :ensure matlab-mode
-    :bind (:map matlab-mode-map
-                ("C-c C-b" . (lambda () (interactive)
-                               (save-excursion (matlab-shell-run-cell))
-                               (if (re-search-forward "^\s*%%" nil t)
-                                   (forward-line))))
-                ("C-M-<return>" . matlab-shell-run-region-or-line)
-                ("M-." . my-matlab-shell-locate-this-fcn)
-                ("C-c <return>" . (lambda () "Run Buffer"
-                            (interactive)
-                            (save-buffer)
-                            (matlab-shell-send-command (file-name-base (buffer-file-name)))))
-                ("C-v" . (lambda ()
-                           (interactive)
-                           (unless (re-search-forward "^\s*%%" nil t)
-                             (scroll-up-command))
-                           (forward-line)))
-                ("M-v" . (lambda ()
-                           (interactive)
-                           (unless (re-search-backward "^\s*%%" nil t)
-                             (scroll-down-command))
-                           (forward-line -1)))
-                ("C-c C-r" . my-matlab-shell-run-region-or-line)
-                ("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
-                ("M-n" . (lambda () (interactive) (matlab-forward-sexp))))
-    :config
-    (defun my-matlab-shell-locate-this-fcn (&optional fcn)
-      "Run \"which FCN\" in the `matlab-shell', then open the file."
-      (interactive)
-      (let* ((fcn (or fcn (matlab-read-word-at-point)))
-             (file (matlab-shell-which-fcn fcn)))
-        (if file
-            (find-file (car file))
-          (error "Command which('%s') returned empty" fcn))))
-
-    (defun my-matlab-shell-run-region-or-line ()
-      "Send region or line as command to matlab shell"
-      (interactive)
-      (let ((p0) (p1))
-        (if (region-active-p)
-            (progn
-              (setq p0 (region-beginning))
-              (setq p1 (region-end)))
-          (setq p0 (line-beginning-position))
-          (setq p1 (line-end-position)))
-        (matlab-shell-send-command (buffer-substring p0 p1))))
-    )
-  (add-hook 'matlab-mode-hook
-            (defun baba-outline-matlab ()
-              "Fold definitions in Matlab."
-              (setq outline-regexp
-                    (rx (or
-                         (group
-                          (group (* space))
-                          bow
-                          (or "classdef" "function" "properties" "methods"
-                              "for" "if" "switch" "case" "while" "end" "%%")
-                          eow))))
-              ))
-
-  (set-display-table-slot
-   standard-display-table
-   'selective-display
-   (let ((face-offset (* (face-id 'shadow) (ash 1 22))))
-     (vconcat (mapcar (lambda (c) (+ face-offset c)) " +"))))
-
-  ;; completion from matlab shell
-  (defun mymatc (cmd &optional arg &rest ignored)
-    "Complete a partially typed symbol in a MATLAB mode buffer using `matlab-shell'.
-  Use `completion-in-region' to support the completion behavior."
-    (interactive (list 'interactive))
-    ;; Try to do completion with the shell
-    (matlab-navigation-syntax
-      (let* ((common-substr-start-pt (save-excursion (forward-word -1) (point)))
-             (common-substr-end-pt (point))
-             (prefix (unless (member (preceding-char) '(?  ?\t ?\n ?, ?\( ?\[ ?\' ?\; ?\) ))
-                       (buffer-substring-no-properties
-                        common-substr-start-pt common-substr-end-pt)))
-             )
-        (cl-case cmd
-          (interactive (if (fboundp 'company-begin-backend) ;; quiet warning when no company
-                            (company-begin-backend 'mymatc)
-                          (error "company-begin-backend is missing")))
-          (prefix (when (and (eq major-mode 'matlab-mode)
-                              (featurep 'matlab-shell)
-                              (matlab-shell-active-p)
-                              matlab-shell-ask-MATLAB-for-completions)
-                     prefix))
-          (candidates (when (and (eq major-mode 'matlab-mode)
-                              (featurep 'matlab-shell)
-                              (matlab-shell-active-p)
-                              matlab-shell-ask-MATLAB-for-completions)
-                           (apply 'append (cdr (assoc 'completions
-                                                      (matlab-shell-completion-list prefix))))))
-          (sorted t)
-          )))
-    )
-
-  (add-hook 'matlab-mode-hook
-            (lambda () (add-to-list 'company-backends 'mymatc)))
-#+end_src
-*** Own Latex
+*** Custom Latex Navigation
 Add code which helps to navigate through tex files
 #+begin_src emacs-lisp :tangle yes
   (setq my/latex-section-head-string "^\s*\\\\section")
@@ -591,10 +482,201 @@ Add code which helps to navigate through tex files
   (define-key LaTeX-mode-map (kbd "M-v") 'my/latex-go-up-section)
   (define-key LaTeX-mode-map (kbd "C-v") 'my/latex-go-down-section)
 #+end_src
+*** CART
+[[https://github.com/Nidish96/cart.el][cart.el]] is an emacs package that allows you to enter calibrated coordinate-based tikz graphics elements into latex documents.
+Quite useful for beamer presentations.
+#+begin_src emacs-lisp :tangle yes
+  (use-package cart
+    :quelpa (cart :fetcher github
+		  :repo "Nidish96/cart.el")
+    :hook ((LaTeX-mode-hook . cart-mode)))
+#+end_src
+*** Auto activating Snippets
+#+begin_src emacs-lisp :tangle yes
+  (use-package laas
+    :hook (LaTeX-mode . laas-mode)
+    :config
+    (aas-set-snippets 'laas-mode
+      :cond #'texmathp
+      "supp" "\\supp"
+      "On" "\\mathcal{O}(n)"
+      "O1" "\\mathcal{O}(1)"
+      "Olog" "\\mathcal{O}(\\log n)"
+      "Olon" "\\mathcal{O}(n\\log n)"
+      ;; bind to functions
+      "Sum" (lambda () (interactive)
+              (yas-expand-snippet "\\sum_{$1}^{$2} $0"))
+      "Span" (lambda () (interactive)
+               (yas-expand-snippet "\\Span($1)$0"))
+      ;; add accent snippets
+      :cond #'laas-object-on-left-condition
+      "qq" (lambda () (interactive) (laas-wrap-previous-object "sqrt"))
+      "'B" (lambda () (interactive) (laas-wrap-previous-object "mathbb"))
+      "'o" (lambda () (interactive) (laas-wrap-previous-object "operatorname")))
+    (setq laas-enable-auto-space nil)
+    )
 
-#+RESULTS:
-: my/latex-go-down-section
+  (use-package lazytab
+    :straight (lazytab :type git :host github :repo "Nidish96/lazytab")
+    ;; :quelpa ((lazytab :fetcher github
+    ;;                   :repo "Nidish96/lazytab")
+    ;;          :upgrade t)
+    :bind (("C-c t" . 'lazytab-orgtbl-replace)
+           ;; :map LaTeX-mode-map
+           ;; ("<tab>" . (lambda () (interactive)
+           ;;              (let ((p0 (point)))
+           ;;                (unless (lazytab-org-table-next-field-maybe)
+           ;;                  (let ((p1 (point)))
+           ;;                    (goto-char p0)
+           ;;                    (unless (yas-expand)
+           ;;                      (goto-char p1)))))))
+           )
+    :hook ((LaTeX-mode . orgtbl-mode)
+           (LaTeX-mode . lazytab-mode))
+    )
 
+  ;; indent-for-tab-command, lazytab-org-table-next-field-maybe
+  ;; (quelpa '(lazytab :fetcher github
+  ;; 		  :repo "Nidish96/lazytab"))
+#+end_src
+** Matlab
+[[https://matlab-emacs.sourceforge.net/index.shtml][Matlab-mode]] is an emacs mode for editing & running matlab scripts. You can launch an inferior shell, do debugging, etc.
+I've setup shortcuts to be identical to what we have with the matlab gui.
+#+begin_src emacs-lisp :tangle yes
+  (use-package matlab
+    :ensure matlab-mode
+    :load-path "/home/nidish/DEV/nidish96-matlab-emacs"
+    :init
+    (setq matlab-purpose-loaded-once nil)
+    :bind (:map matlab-mode-map
+                ("C-c C-b" . (lambda () (interactive)
+                               (save-excursion (matlab-shell-run-cell))
+                               (if (re-search-forward "^\s*\^L*%%" nil t)
+                                   (forward-line) (forward-page))))
+                ("C-<return>" . matlab-shell-run-cell)
+                ("C-M-<return>" . matlab-shell-run-region-or-line)
+                ("M-." . my-matlab-shell-locate-this-fcn)
+                ("C-c <return>" . (lambda () "Run Buffer"
+                                    (interactive)
+                                    (save-buffer)
+                                    (matlab-shell-send-command (file-name-base (buffer-file-name)))))
+                ("C-c C-m" . (lambda () "Run Buffer"
+                               (interactive)
+                               (save-buffer)
+                               (matlab-shell-send-command (file-name-base (buffer-file-name)))))
+                ("C-v" . (lambda ()
+                           (interactive)
+                           (unless (re-search-forward "^\s*\^L%%" nil t)
+                             (forward-page))
+                           (forward-line)))
+                ("M-v" . (lambda ()
+                           (interactive)
+                           (unless (re-search-backward "^\s*\^L%%" nil t)
+                             (backward-page))
+                           (forward-line -1)))
+                ("C-c C-r" . my-matlab-shell-run-region-or-line)
+                ("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
+                ("M-n" . (lambda () (interactive) (matlab-forward-sexp)))
+                ("C-c C-p" . #'matlab-shell)
+                ("C-<tab>" . ts-fold-toggle)
+                ("C-M-f" . (lambda () (interactive)
+                             (let* ((nd (tree-sitter-node-at-pos))
+                                    (ndp (tsc-get-parent nd)))
+                               (when (eq (point) (tsc-node-start-position ndp))
+                                 (setq nd ndp))
+                               (if (or (eq (tsc-node-type nd) 'source_file)
+                                       (not (eq (point) (tsc-node-start-position nd))))
+                                   (forward-sexp)
+                                 (goto-char (tsc-node-end-position nd))))))
+                ("C-M-b" . (lambda () (interactive)
+                             (let* ((nd (save-excursion (backward-char)
+                                                        (tree-sitter-node-at-pos)))
+                                    (ndp (tsc-get-parent nd)))
+                               (when (eq (point) (tsc-node-end-position ndp))
+                                 (setq nd ndp))
+                               (if (or (eq (tsc-node-type nd) 'source_file)
+                                       (not (eq (point) (tsc-node-end-position nd))))
+                                   (backward-sexp)
+                                 (goto-char (tsc-node-start-position nd))))))
+                ("C-c d" . (lambda () (interactive) (matlab-shell-send-command
+                                                     (concat "help "
+                                                             (matlab-read-word-at-point)))))
+
+                )
+    :config
+    (defun my-matlab-shell-locate-this-fcn (&optional fcn)
+      "Run \"which FCN\" in the `matlab-shell', then open the file."
+      (interactive)
+      (let* ((fcn (or fcn (matlab-read-word-at-point)))
+             (file (matlab-shell-which-fcn fcn)))
+        (if file
+            (find-file (car file))
+          (error "Command which('%s') returned empty" fcn))))
+    (defun my-matlab-shell-run-region-or-line ()
+      "Send region or line as command to matlab shell"
+      (interactive)
+      (let ((p0) (p1))
+        (if (region-active-p)
+            (progn
+              (setq p0 (region-beginning))
+              (setq p1 (region-end)))
+          (setq p0 (line-beginning-position))
+          (setq p1 (line-end-position)))
+        (matlab-shell-send-command (buffer-substring p0 p1))))
+    (setq matlab-file-font-lock-keywords matlab-file-really-gaudy-font-lock-keywords)
+    :hook ((matlab-mode . tree-sitter-hl-mode)
+           (find-file . (lambda ()
+                          (when (and (not matlab-purpose-loaded-once)
+                                     (eq major-mode 'matlab-mode)
+                                     (y-or-n-p "Load matlab purpose layout?"))
+                            (purpose-mode)
+                            (setq matlab-purpose-loaded-once t)
+                            (let ((dirname (file-name-directory buffer-file-name))
+                                  (buffname (buffer-file-name)))
+                              (purpose-load-window-layout "matlab")
+                              (other-window 2) (dired dirname)
+                              (other-window -2)
+                              (when (and (not (matlab-shell-active-p))
+                                         (y-or-n-p "Start Matlab?"))
+                                (other-window 3)
+                                (purpose-toggle-window-purpose-dedicated)
+                                (find-file buffname) (matlab-shell)
+                                (purpose-toggle-window-purpose-dedicated))
+                              (other-window 1) (find-file buffname))))))
+    )
+
+  (add-hook 'matlab-mode-hook
+            (defun baba-outline-matlab ()
+              "Fold definitions in Matlab."
+              (setq outline-regexp
+                    (rx (or
+                         (group
+                          (group (* space))
+                          bow
+                          (or "classdef" "function" "properties" "methods"
+                              "for" "if" "switch" "case" "while" "end" "%%")
+                          eow))))
+              ;; (baba/outline-overview)
+              ))
+
+
+  (use-package outline
+    :bind (:map outline-mode-map
+                ("C-<tab>" . outline-cycle)
+                ("C-<iso-lefttab>" . outline-cycle-buffer)))
+  (add-hook 'outline-minor-mode-hook
+            (defun baba/outline-overview ()
+              "Show only outline headings."
+              (outline-show-all)
+              (outline-hide-body)
+              ))
+
+  (set-display-table-slot
+   standard-display-table
+   'selective-display
+   (let ((face-offset (* (face-id 'shadow) (ash 1 22))))
+     (vconcat (mapcar (lambda (c) (+ face-offset c)) " +"))))
+#+end_src
 ** Python
 You need to install the following from pip:
 + 'python-language-server[all]'
@@ -629,7 +711,6 @@ You need to install the following from pip:
   (use-package company-box
     :hook (company-mode . company-box-mode))
 
-
   (use-package projectile
     :diminish projectile-mode
     :config (projectile-mode)
@@ -657,6 +738,8 @@ You need to install the following from pip:
        ("pyls.plugins.pyls_isort.enabled" t t)))
     :hook
     ((python-mode . lsp)))
+
+  (use-package lsp-pyright)
 
   ;; Custom Stuff
   (setq my/python-block-head-string "^\s*####")
@@ -704,6 +787,16 @@ MATLAB debugging is built into matlab-mode above.
 	   :map c++-mode-map
 	   ("C-c RET" . compile)))
 #+end_src
+** Highlight indent guides
+#+begin_src emacs-lisp :tangle yes
+  (use-package indent-guide
+    :config
+    ;; (set-face-background 'indent-guide-face "gray")
+    :hook (prog-mode . indent-guide-mode))
+
+  (use-package highlight-indentation
+    :hook (prog-mode . highlight-indentation-mode))
+#+end_src
 * Miscellanies
 ** OpenFOAM
 [[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package for editing openfoam files.
@@ -732,7 +825,7 @@ MATLAB debugging is built into matlab-mode above.
 	   )
     )
 #+end_src
-** Rainbow Mode
+** Rainbow Delimiters Mode
 #+begin_src emacs-lisp :tangle yes
   (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -759,7 +852,8 @@ MATLAB debugging is built into matlab-mode above.
   (dired startdir)
 #+end_src
 
-* Bug fixed
+* Bug fixes
+** Prevent company from completing numbers
 #+begin_src emacs-lisp :tangle yes
   (push (apply-partially #'cl-remove-if
                          (lambda (c)
