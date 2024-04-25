@@ -1,6 +1,8 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
 
-emacsclient -c
+source ~/.profile
+
+emacsclient -ce '(lambda () (interactive) previous-buffer)'
 if [ $? -ne 0 ]; then
     emacs --daemon
     emacsclient -c
