@@ -86,12 +86,14 @@ The following are the list of features enabled by the config in addition to emac
    #+end_src
 3. You can bind the following shell script to a keybinding (I like using =Ctrl-Alt-e=) to conditionally launch an emacs client with the daemon (or create a new daemon if it doesn't already exist).
    #+begin_src shell
-     #!/usr/bin/sh
+     #!/usr/bin/bash
 
-     emacsclient -c
+     source ~/.profile
+
+     emacsclient -ce '(lambda () (interactive) previous-buffer)'
      if [ $? -ne 0 ]; then
-         emacs --daemon
-         emacsclient -c
+       emacs --daemon
+       emacsclient -c
      fi
    #+end_src
 
