@@ -380,7 +380,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-tree-slide)
 #+end_src
-** Org-Capute
+** Org-Capture
 [[https://orgmode.org/manual/Capture.html][Org Capture]] is a package to easily store notes with little interruption of work flow
 #+begin_src emacs-lisp :tangle yes
   (setq org-default-notes-file (concat org-directory "/notes.org"))
@@ -411,6 +411,20 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
                                                   "Local")
            "* TODO %?\n Dated: %u\n Location: %a")
           ))
+#+end_src
+** Org-Ref
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-ref
+    :ensure t
+    :bind (:map org-mode-map
+                ("C-c ]" . 'org-ref-insert-link))
+    :config
+    (require 'org-ref-helm)
+    (setq org-ref-insert-cite-function (lambda () (org-cite-insert nil)))
+
+    (setq org-latex-prefer-user-labels t)
+    (setq org-html-prefer-user-labels t)
+    )
 #+end_src
 * Integrated Development Environments
 ** Latex
@@ -568,6 +582,8 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
     :load-path "/home/nidish/DEV/nidish96-matlab-emacs"
     :init
     (setq matlab-purpose-loaded-once nil)
+    (require 'matlab-shell)
+    (require 'matlab-sections)    
     :bind (:map matlab-mode-map
                 ("C-c C-b" . (lambda () (interactive)
                                (save-excursion (matlab-shell-run-cell))
@@ -644,25 +660,6 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
           (setq p1 (line-end-position)))
         (matlab-shell-send-command (buffer-substring p0 p1))))
     (setq matlab-file-font-lock-keywords matlab-file-really-gaudy-font-lock-keywords)
-    :hook ((matlab-mode . tree-sitter-hl-mode)
-           (find-file . (lambda ()
-                          (when (and (not matlab-purpose-loaded-once)
-                                     (eq major-mode 'matlab-mode)
-                                     (y-or-n-p "Load matlab purpose layout?"))
-                            (purpose-mode)
-                            (setq matlab-purpose-loaded-once t)
-                            (let ((dirname (file-name-directory buffer-file-name))
-                                  (buffname (buffer-file-name)))
-                              (purpose-load-window-layout "matlab")
-                              (other-window 2) (dired dirname)
-                              (other-window -2)
-                              (when (and (not (matlab-shell-active-p))
-                                         (y-or-n-p "Start Matlab?"))
-                                (other-window 3)
-                                (purpose-toggle-window-purpose-dedicated)
-                                (find-file buffname) (matlab-shell)
-                                (purpose-toggle-window-purpose-dedicated))
-                              (other-window 1) (find-file buffname))))))
     )
 
   (add-hook 'matlab-mode-hook
@@ -724,9 +721,7 @@ You need to install the following from pip:
                 ("<tab>" . company-complete-selection))
     (:map lsp-mode-map
           ("<tab>" . company-indent-or-complete-common))
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+  )
 
   (use-package company-box
     :hook (company-mode . company-box-mode))
