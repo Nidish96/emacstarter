@@ -586,10 +586,10 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
     (require 'matlab-sections)    
     :bind (:map matlab-mode-map
                 ("C-c C-b" . (lambda () (interactive)
-                               (save-excursion (matlab-shell-run-cell))
-                               (if (re-search-forward "^\s*\^L*%%" nil t)
-                                   (forward-line) (forward-page))))
-                ("C-<return>" . matlab-shell-run-cell)
+                               (save-window-excursion
+                                 (matlab-shell-run-code-section))
+                               (matlab-sections-forward-section 1 t)))
+                ("C-<return>" . matlab-shell-run-code-section)
                 ("C-M-<return>" . matlab-shell-run-region-or-line)
                 ("M-." . my-matlab-shell-locate-this-fcn)
                 ("C-c <return>" . (lambda () "Run Buffer"
@@ -600,16 +600,11 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                                (interactive)
                                (save-buffer)
                                (matlab-shell-send-command (file-name-base (buffer-file-name)))))
-                ("C-v" . (lambda ()
-                           (interactive)
-                           (unless (re-search-forward "^\s*\^L%%" nil t)
-                             (forward-page))
-                           (forward-line)))
-                ("M-v" . (lambda ()
-                           (interactive)
-                           (unless (re-search-backward "^\s*\^L%%" nil t)
-                             (backward-page))
-                           (forward-line -1)))
+                ("C-c ]" . 'matlab-sections-forward-section)
+                ("C-c [" . 'matlab-sections-backward-section)
+  	      
+                ("C-c <down>" . 'matlab-sections-move-section-down)
+                ("C-c <up>" . 'matlab-sections-move-section-up)
                 ("C-c C-r" . my-matlab-shell-run-region-or-line)
                 ("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
                 ("M-n" . (lambda () (interactive) (matlab-forward-sexp)))
@@ -638,6 +633,31 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                                                      (concat "help "
                                                              (matlab-read-word-at-point)))))
 
+  	      ("C-c 1" . (lambda () (interactive) (matlab-shell-send-command
+                                                     (concat (matlab-read-word-at-point)
+                                                             "=1"))))
+                ("C-c 0" . (lambda () (interactive) (matlab-shell-send-command
+                                                     (concat (matlab-read-word-at-point)
+                                                             "=0"))))
+
+                ("C-c s" . (lambda () (interactive)
+                             (matlab-shell-send-command
+                              (concat "size(" (if (region-active-p)
+                                                  (buffer-substring
+                                                   (region-beginning) (region-end))
+                                                (matlab-read-word-at-point)) ")"))))
+                ("C-c r" . (lambda () (interactive)
+                             (matlab-shell-send-command (if (region-active-p)
+                                                            (buffer-substring
+                                                             (region-beginning)
+                                                             (region-end))
+                                                          (matlab-read-word-at-point)) )))
+
+                ("C-c D" . (lambda () (interactive) (matlab-shell-send-command
+                                                     (concat "cd " (file-name-directory
+                                                                    (buffer-file-name))))))
+                ("C-c C-x c" . #'comment-region)
+                ("C-c C-x u" . #'uncomment-region)	      
                 )
     :config
     (defun my-matlab-shell-locate-this-fcn (&optional fcn)
