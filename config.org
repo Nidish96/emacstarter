@@ -197,7 +197,31 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
                         ("integration" "integration/*")
                         (:exclude ".dir-locals.el" "*-tests.el"))))
 #+end_src
-
+** Tree-sitter
+#+begin_src emacs-lisp :tangle yes
+  (use-package tree-sitter
+    :hook ((python-mode . tree-sitter-hl-mode)
+           (LaTeX-mode . tree-sitter-hl-mode)
+           (matlab-mode . tree-sitter-hl-mode)
+           (emacs-lisp-mode . tree-sitter-hl-mode)
+           (js-mode . tree-sitter-hl-mode)
+           (css-mode . tree-sitter-hl-mode)
+           ))
+  (use-package tree-sitter-langs)
+  (use-package ts-fold
+    ;; :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
+    :straight (ts-fold :type git :host github :repo "Nidish96/ts-fold")
+    :config (require 'ts-fold-indicators)
+    :hook ((python-mode . ts-fold-mode)
+           (LaTeX-mode . ts-fold-mode)
+           (matlab-mode . ts-fold-mode)
+           (emacs-lisp-mode . ts-fold-mode)
+           (js-mode . ts-fold-mode)
+           (css-mode . ts-fold-mode)
+           ;; (prog-mode . ts-fold-indicators-mode)
+           ;; (LaTeX-mode . ts-fold-indicators-mode)
+           ))
+#+end_src
 * Org-mode
 Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
@@ -579,7 +603,6 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
 #+begin_src emacs-lisp :tangle yes
   (use-package matlab
     :ensure matlab-mode
-    :load-path "/home/nidish/DEV/nidish96-matlab-emacs"
     :init
     (setq matlab-purpose-loaded-once nil)
     (require 'matlab-shell)
@@ -832,6 +855,133 @@ MATLAB debugging is built into matlab-mode above.
   (use-package highlight-indentation
     :hook (prog-mode . highlight-indentation-mode))
 #+end_src
+** Julia
+#+begin_src emacs-lisp :tangle yes
+  (use-package vterm
+    :ensure t)
+
+  (use-package lsp-julia
+    :config (setq lsp-julia-default-environment "~/.julia/environments/v1.11") ;; change
+    )
+
+  (use-package julia-mode
+    :ensure t
+    :hook ((julia-mode . outline-minor-mode)
+  	 (julia-mode . tree-sitter-mode)
+  	 (julia-mode . ts-fold-mode)
+  	 (julia-mode . tree-sitter-hl-mode)
+  	 (julia-mode . (lambda () (setq company-minimum-prefix-length 0) (corfu-mode nil)))
+  	 ;; (julia-mode . lsp-deferred)
+  	 )
+    :bind (:map julia-mode-map
+  	      ("C-c [" . 'outline-previous-heading)
+  	      ("C-c ]" . 'outline-next-heading)
+  	      ("C-M-f" . (lambda () (interactive)
+  			   (let* ((nd (tree-sitter-node-at-pos))
+  				  (ndp (tsc-get-parent nd)))
+  			     (when (eq (point) (tsc-node-start-position ndp))
+  			       (setq nd ndp))
+  			     (if (or (eq (tsc-node-type nd) 'source_file)
+  				     (not (eq (point) (tsc-node-start-position nd))))
+  				 (forward-sexp)
+  			       (goto-char (tsc-node-end-position nd))))))
+  	      ("C-M-b" . (lambda () (interactive)
+  			   (let* ((nd (save-excursion (backward-char)
+  						      (tree-sitter-node-at-pos)))
+  				  (ndp (tsc-get-parent nd)))
+  			     (when (eq (point) (tsc-node-end-position ndp))
+  			       (setq nd ndp))
+  			     (if (or (eq (tsc-node-type nd) 'source_file)
+  				     (not (eq (point) (tsc-node-end-position nd))))
+  				 (backward-sexp)
+  			       (goto-char (tsc-node-start-position nd))))))
+  	      ;; ("M-." . #'lsp-find-definition)
+  	      )
+    :config (require 'lsp-julia)
+    )
+
+  ;; Custom Syntax Highlighting
+  (tree-sitter-hl-add-patterns 'julia
+    [(call_expression (identifier) @function.call)])
+
+  (tree-sitter-hl-add-patterns 'julia
+    [("begin" @keyword)
+     ("end" @keyword)])
+#+end_src
+*** Julia-Snail Config
+#+begin_src emacs-lisp :tangle yes
+  (use-package julia-snail
+    :hook (julia-mode . julia-snail-mode)
+    :bind (:map julia-snail-mode-map
+  	      ("C-c <return>" . (lambda () (interactive)
+    				  (my/julia-sendsubtree (point-min)
+    							(point-max))))
+    	      ("C-<return>" . (lambda () (interactive) (save-excursion
+    							 (my/julia-sendsubtree))))
+    	      ("C-c C-b" . (lambda () (interactive) (my/julia-sendsubtree)
+    			     (forward-line)))
+  	      ("C-c r" . (lambda () (interactive)
+    			   (if (region-active-p)
+    			       (julia-snail-send-region)
+    			     (julia-snail--send-to-repl (thing-at-point 'symbol)))
+    			   ))
+    	      ("C-c s" . (lambda () (interactive)
+    			   (julia-snail--send-to-repl
+    			     (concat "size("
+    				     (if (region-active-p)
+    					 (buffer-substring (mark) (point))
+    				       (thing-at-point 'symbol))
+    				     ")"))))
+    	      ("C-c t" . (lambda () (interactive)
+    			   (julia-snail--send-to-repl
+    			     (concat "typeof("
+    				     (if (region-active-p)
+    					 (buffer-substring (mark) (point))
+    				       (thing-at-point 'symbol))
+    				     ")"))))
+  	      ("C-c 0" . (lambda () (interactive)
+    			   (julia-snail--send-to-repl
+    			     (concat (if (region-active-p)
+    					 (buffer-substring (mark) (point))
+    				       (thing-at-point 'symbol))
+    				     "=0"))))
+  	      ("C-c 1" . (lambda () (interactive)
+    			   (julia-snail--send-to-repl
+    			     (concat (if (region-active-p)
+    					 (buffer-substring (mark) (point))
+    				       (thing-at-point 'symbol))
+    				     "=1"))))	      
+  	      )
+    :config
+    (defun my/julia-sendsubtree (&optional p0 p1)
+      "Send current subtree to julia and wait in the end"
+      (interactive)
+      (let* ((p0 (or p0 (outline-previous-heading) (point-min)))
+    	   (p1 (or p1 (outline-next-heading) (point-max))))
+        (julia-snail--send-to-repl (buffer-substring p0 p1))
+        (julia-snail--flash-region p0 p1)
+        )
+      )
+    ;; (setq julia-snail-multimedia-enable t)
+    )
+#+end_src
+*** code-cells
+#+begin_src emacs-lisp :tangle yes
+  (use-package code-cells
+    :straight (code-cells :type git :host github :repo "Nidish96/code-cells.el")
+    :hook (julia-mode . code-cells-mode)
+    :config
+    (add-to-list 'code-cells-eval-region-commands
+  	       '(julia-snail-mode . julia-snail-send-code-cell)))
+#+end_src
+*** eglot
+#+begin_src emacs-lisp :tangle yes
+  (use-package eglot-jl
+    :init (eglot-jl-init)
+    :hook ((julia-mode . eglot-ensure))
+    )
+#+end_src
+
 * Miscellanies
 ** OpenFOAM
 [[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package for editing openfoam files.
