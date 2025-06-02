@@ -44,8 +44,9 @@ It's actually a little more than just "basic". It should have most of the immedi
 
      sudo apt install python3-pylsp
    #+end_src
-6. Clone the contents of this repository into your ~/.emacs.d folder.
-7. Fire up emacs a couple times to ensure everything is installed properly.
+6. Install 
+7. Clone the contents of this repository into your ~/.emacs.d folder.
+8. Fire up emacs a couple times to ensure everything is installed properly.
 * List of Features Included in Config
 The following are the list of features enabled by the config in addition to emacs defaults.
 1. Packages:
