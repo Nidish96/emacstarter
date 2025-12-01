@@ -226,7 +226,10 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
 #+begin_src emacs-lisp :tangle yes
   (use-package code-cells
     :straight (code-cells :type git :host github :repo "Nidish96/code-cells.el")
-    :hook (julia-mode . code-cells-mode)
+    :hook ((julia-mode . code-cells-mode)
+  	 (julia-ts-mode . code-cells-mode)
+  	 (python-mode . code-cells-mode)
+  	 (python-ts-mode . code-cells-mode))
     :config
     (add-to-list 'code-cells-eval-region-commands
   	       '(julia-snail-mode . julia-snail-send-code-cell)))
@@ -755,92 +758,53 @@ You need to install the following from pip:
 + debugpy
   Ensure "/home/nbalaji/.local/bin" is added to path.
 #+begin_src emacs-lisp :tangle yes
-  (use-package python-mode
+  (use-package elpy
     :ensure t
-    :hook (python-mode . lsp-deferred)
-    :custom
-    ;; NOTE: Set these if Python 3 is called "python3" on your system!
-    ;; (python-shell-interpreter "python3")
-    ;; (dap-python-executable "python3")
-    (dap-python-debugger 'debugpy)
-    :bind (:map python-mode-map
-                ("C-<tab>" . yas-expand))
+    :config (elpy-enable)
+    :hook ((python-mode . elpy-mode)
+           (python-ts-mode . elpy-mode)
+           (elpy-mode . outline-minor-mode)
+           (elpy-mode . treesit-fold-mode))
+    :bind (:map elpy-mode-map
+    	    ("C-c <return>" . #'code-cells-eval-whole-buffer)
+      	      ("C-<return>" . #'code-cells-eval)
+      	      ("C-c C-b" . #'code-cells-eval-and-step)
+                ("C-c r" . (lambda () (interactive)
+                             (if (region-active-p)
+                                 (python-shell-send-region
+                                  (region-beginning)
+                                  (region-end))
+                               (python-shell-send-string (thing-at-point 'symbol)))
+                             ))
+                ("C-c s" . (lambda () (interactive)
+                             (let ((symb (if (region-active-p)
+                                             (buffer-substring (region-beginning)
+    							   (region-end))
+                                           (thing-at-point 'symbol))))
+                               (python-shell-send-string
+                                (concat "np.array(" symb ").shape")))
+                             ))
+                ("C-c 0" . (lambda () (interactive)
+                             (let ((symb (if (region-active-p)
+                                             (buffer-substring (region-beginning)
+    							   (region-end))
+                                           (thing-at-point 'symbol))))
+                               (python-shell-send-string (concat symb "=0")))))
+                ("C-c 1" . (lambda () (interactive)
+                             (let ((symb (if (region-active-p)
+                                             (buffer-substring (region-beginning)
+    							   (region-end))
+                                           (thing-at-point 'symbol))))
+                               (python-shell-send-string (concat symb "=1")))))
+                ("C-c D" . (lambda () (interactive)
+                             (python-shell-send-string "import os")
+                             (python-shell-send-string
+                              (format "os.chdir('%s')"
+                                      (file-name-directory (buffer-file-name))))
+                             (python-shell-send-string "os.getcwd()")))
+    	    ("C-c C-x c" . #'comment-region)
+    	    )
     )
-  (use-package flycheck)
-
-  (use-package company
-    :after lsp-mode
-    :hook (lsp-mode . company-mode)
-    :bind (:map company-active-map
-                ("<tab>" . company-complete-selection))
-    (:map lsp-mode-map
-          ("<tab>" . company-indent-or-complete-common))
-  )
-
-  (use-package company-box
-    :hook (company-mode . company-box-mode))
-
-  (use-package projectile
-    :diminish projectile-mode
-    :config (projectile-mode)
-    :custom ((projectile-completion-system 'ivy))
-    :bind-keymap
-    ("C-c p" . projectile-command-map)
-    :init
-    ;; NOTE: Set this to the folder where you keep your Git repos!
-    (when (file-directory-p "~/Projects/Code")
-      (setq projectile-project-search-path '("~/Projects/Code")))
-    (setq projectile-switch-project-action #'projectile-dired))
-
-  (use-package counsel-projectile
-    :config (counsel-projectile-mode))
-
-  (use-package lsp-ui
-    :commands lsp-ui-mode)
-
-  (use-package lsp-mode
-    :config
-    (lsp-register-custom-settings
-     '(("pyls.plugins.pyls_mypy.enabled" t t)
-       ("pyls.plugins.pyls_mypy.live_mode" nil t)
-       ("pyls.plugins.pyls_black.enabled" t t)
-       ("pyls.plugins.pyls_isort.enabled" t t)))
-    :hook
-    ((python-mode . lsp)))
-
-  (use-package lsp-pyright)
-
-  ;; Custom Stuff
-  (setq my/python-block-head-string "^\s*####")
-
-  ;; Custom stuff for python blocks
-  (defun my/python-run-block ()
-    "Run the current block"
-    (interactive)
-    (let ((p0 (save-excursion (or (re-search-backward my/python-block-head-string (point-min) t) (point-min))))
-          (p1 (save-excursion (or (re-search-forward my/python-block-head-string (point-max) t) (point-max)))))
-      (python-shell-send-region p0 p1)
-      (goto-char p1) (forward-line))
-    )
-
-  (define-key python-mode-map (kbd "C-c C-b") 'my/python-run-block)
-
-  (defun my/python-go-up-block ()
-    "Go up a block"
-    (interactive)
-    (or (re-search-backward my/python-block-head-string (point-min) t)
-        (scroll-up-command))
-    (forward-line -1))
-
-  (defun my/python-go-down-block ()
-    "Go down one block"
-    (interactive)
-    (or (re-search-forward my/python-block-head-string (point-max) t)
-        (scroll-down-command))
-    (forward-line))
-
-  (define-key python-mode-map (kbd "M-v") 'my/python-go-up-block)
-  (define-key python-mode-map (kbd "C-v") 'my/python-go-down-block) 
 #+end_src
 ** RealGUD
 [[https://github.com/realgud/realgud][RealGUD]] is an emacs "frontend" for debugging. It works with all the classic tools (Python, C/C++, FORTRAN, etc.).
@@ -877,7 +841,7 @@ MATLAB debugging is built into matlab-mode above.
   	 (julia-mode . tree-sitter-mode)
   	 (julia-mode . ts-fold-mode)
   	 (julia-mode . tree-sitter-hl-mode)
-  	 (julia-mode . (lambda () (setq company-minimum-prefix-length 0) (corfu-mode nil)))
+  	 (julia-mode . (lambda () (setq company-minimum-prefix-length 3)))
   	 ;; (julia-mode . lsp-deferred)
   	 )
     :bind (:map julia-mode-map
