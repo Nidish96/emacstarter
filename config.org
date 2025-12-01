@@ -234,6 +234,24 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
     (add-to-list 'code-cells-eval-region-commands
   	       '(julia-snail-mode . julia-snail-send-code-cell)))
 #+end_src
+** ef-themes
+#+begin_src emacs-lisp :tangle yes
+  (use-package ef-themes
+    :ensure t
+    :config
+    ;;(ef-themes-select 'ef-deuteranopia-dark)
+    )
+#+end_src
+** COMMENT rand-theme
+Enable to have random themes
+#+begin_src emacs-lisp :tangle yes
+  (use-package rand-theme
+    :init
+    (setq rand-theme-unwanted '(light-blue dichromacy) )
+    :config
+    (rand-theme)
+    )
+#+end_src
 * Org-mode
 Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
