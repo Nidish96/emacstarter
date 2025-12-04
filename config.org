@@ -160,8 +160,21 @@
 #+begin_src emacs-lisp :tangle yes
   (use-package outline
     :bind (:map outline-mode-map
-		("C-<tab>" . outline-cycle)
-		("C-<iso-lefttab>" . outline-cycle-buffer)))
+  	      ("C-<tab>" . outline-cycle)
+  	      :map outline-minor-mode-map
+  	      ("C-<tab>" . outline-cycle)
+  	      )
+    :hook ((outline-minor-mode . (lambda ()
+  				 (outline-show-all)
+  				 (outline-hide-body)))
+  	 )
+    )
+#+end_src
+** Outshine
+#+begin_src emacs-lisp :tangle yes
+  (use-package outshine
+    :hook ((julia-mode . outshine-mode))
+    )
 #+end_src
 ** Dired+
 #+begin_src emacs-lisp :tangle yes
@@ -218,9 +231,12 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
            (emacs-lisp-mode . ts-fold-mode)
            (js-mode . ts-fold-mode)
            (css-mode . ts-fold-mode)
+  	 (julia-mode . ts-fold-mode)
            ;; (prog-mode . ts-fold-indicators-mode)
            ;; (LaTeX-mode . ts-fold-indicators-mode)
-           ))
+           )
+    :bind (("C-<iso-lefttab>" . ts-fold-toggle))
+    )
 #+end_src
 ** code-cells
 #+begin_src emacs-lisp :tangle yes
@@ -751,18 +767,6 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
               ;; (baba/outline-overview)
               ))
 
-
-  (use-package outline
-    :bind (:map outline-mode-map
-                ("C-<tab>" . outline-cycle)
-                ("C-<iso-lefttab>" . outline-cycle-buffer)))
-  (add-hook 'outline-minor-mode-hook
-            (defun baba/outline-overview ()
-              "Show only outline headings."
-              (outline-show-all)
-              (outline-hide-body)
-              ))
-
   (set-display-table-slot
    standard-display-table
    'selective-display
@@ -940,7 +944,7 @@ MATLAB debugging is built into matlab-mode above.
     ;; (setq julia-snail-multimedia-enable t)
     )
 #+end_src
-*** eglot
+*** COMMENT eglot
 #+begin_src emacs-lisp :tangle yes
   (use-package eglot-jl
     :init (eglot-jl-init)
