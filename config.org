@@ -985,6 +985,23 @@ MATLAB debugging is built into matlab-mode above.
   (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
+** Poporg
+#+begin_src emacs-lisp :tangle yes
+  (use-package poporg
+    :bind ("C-c /" . poporg-dwim)
+    :hook (poporg-edit . (lambda ()
+    			 (let* ((ovl (nth 1 (car poporg-data)))
+    				(bufr (overlay-buffer ovl))
+    				(mmd (buffer-local-value 'major-mode bufr)))
+    			   (pcase mmd
+    			     ('julia-mode (markdown-mode))
+    			     (otherwise (org-mode))
+    			     )
+    			   )
+    			 )
+    		     )
+    )
+#+end_src
 * Init File Stuff
 ** Tangle init org file
 #+begin_src emacs-lisp :tangle yes
