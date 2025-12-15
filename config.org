@@ -117,9 +117,6 @@
 
     (add-hook 'helm-minibuffer-set-up-hook
 	    'my//helm-hide-minibuffer-maybe))
-
-  (use-package helm-ls-git)
-  (use-package helm-swoop)
 #+end_src
 ** Magit
 [[https://emacs-helm.github.io/helm/][Magit]] is a "git porcelai", i.e., a git interface in emacs.
