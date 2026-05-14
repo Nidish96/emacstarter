@@ -46,6 +46,11 @@ It uses [[https://github.com/progfolio/elpaca][elpaca]] for package management. 
      $pdf_previewer = "cat > /dev/null";
    #+end_src
 6. Clone the contents of this repository into your ~/.emacs.d folder.
+   #+begin_src bash
+     cd ~
+     git clone git@github.com:Nidish96/emacstarter.git
+     mv emacstarter .emacs.d
+   #+end_src
 7. Fire up emacs a couple times to ensure everything is installed properly.
 
 ** Note on treesit modes
