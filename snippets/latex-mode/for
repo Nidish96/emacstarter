@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for
+# key: for
+# --
+\foreach ${1:\x} in ${2:{${3:0,...,10}}} {
+	 $0
+};

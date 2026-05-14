@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: expf
+# key: expf
+# --
+if ${1:savfigs}:
+    ${2:plt}.savefig("./FIGS$0/${3:`(my/get-file-folder-prefix (buffer-file-name))`_${4:figname.${5:pdf}}}")

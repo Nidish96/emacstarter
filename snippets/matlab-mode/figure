@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: figure
+# key: figure
+# --
+fsz = ${5:16};
+figure(${1:1})
+poss=get(gcf, 'Position');
+set(gcf, 'Color', 'white', 'Position', ${2:poss})
+clf()
+tiledlayout(${3:1},${4:1},'TileSpacing','compact', 'Padding','compact');
+nexttile;
+$0

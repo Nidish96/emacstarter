@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: subfigures
+# key: subfig
+# --
+#+begin_export latex
+\begin{figure}[!h]
+  \centering
+  \begin{subfigure}{${1:0.5\textwidth}}
+    \centering
+    \includegraphics[width=${2:0.95\linewidth}]{$0}${3:
+    \caption{\}}
+  \end{subfigure}%
+  \begin{subfigure}{$1}
+    \centering
+    \includegraphics[width=$2]{$0}$3    
+  \end{subfigure}
+  ${4:\caption{$5}}
+  ${6:\label{${7:fig:${8:label}}}}
+\end{figure}
+#+end_export

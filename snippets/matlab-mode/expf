@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: expf
+# key: expf
+# --
+if ${1:savfigs}
+   export_fig(sprintf('./FIGS/${2:`(my/get-file-folder-prefix (buffer-file-name))`_${3:figname.pdf}'}$0), ${4:'-dpdf'})
+end

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: cetz
+# key: cetz
+# --
+#cetz.canvas({
+    import cetz.draw: *
+    $0
+})

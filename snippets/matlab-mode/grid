@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: grid
+# key: grid
+# --
+grid on;grid minor;grid minor;box on;$0

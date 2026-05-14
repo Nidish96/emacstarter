@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: special-block
+# key: <
+# --
+#+begin_$1 ${2:Title}
+	   $0
+#+end_$1

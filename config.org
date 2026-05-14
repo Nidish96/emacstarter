@@ -1,53 +1,9 @@
-#+TITLE: Basic Emacs Configuration
++TITLE: Basic Emacs Configuration
 #+LANGUAGE: en
-#+STARTUP: fold indent
+#+STARTUP: content indent
    
 #+begin_src emacs-lisp :tangle yes
   ;; -*- lexical-binding:t; -*-
-#+end_src
-* Load Package Repositories
-#+begin_src emacs-lisp :tangle yes
-  (require 'package)
-  (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-			   ("melpa" . "http://melpa.org/packages/") ))
-  ;; (package-initialize) ;; required for earlier emacs
-
-  ;; Load use-package
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  (eval-and-compile
-    (setq use-package-always-ensure t
-	  use-package-expand-minimally t))
-#+end_src
-** Quelpa
-[[https://github.com/quelpa/quelpa][Quelpa]] is an emacs package installer that allows you to directly install from web sources.
-[[https://github.com/quelpa/quelpa-use-package][Quelpa-use-package]] is a package that allows use-package to install through quelpa.
-#+begin_src emacs-lisp :tangle yes
-  (use-package quelpa
-    :ensure t)
-  (use-package quelpa-use-package
-    :ensure t)
-#+end_src
-** Straight.el
-#+begin_src emacs-lisp :tangle yes
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name
-          "straight/repos/straight.el/bootstrap.el"
-          (or (bound-and-true-p straight-base-dir)
-              user-emacs-directory)))
-        (bootstrap-version 7))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-
-  (setq package-enable-at-startup nil)
 #+end_src
 * Minor Conveniences
 #+begin_src emacs-lisp :tangle yes
@@ -67,126 +23,319 @@
   (global-set-key [f8] 'neotree-toggle)
   (global-set-key (kbd "C-x B") 'ibuffer)
 
-  (define-key emacs-lisp-mode-map (kbd "C-c C-e") 'eval-region)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-r") 'eval-region)
   (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
+
+  ;; (define-key emacs-lisp-mode-map (kbd "C-c m") 'compile)
+  ;; (define-key org-mode-map (kbd "C-c m") 'compile)
+
+  (setq shell-file-name "/usr/bin/zsh")
+#+end_src
+** compat
+#+begin_src emacs-lisp :tangle yes
+  (use-package compat
+    :ensure t)
+  (elpaca-wait)
 #+end_src
 ** Multi-Cursors Mode
 #+begin_src emacs-lisp :tangle yes
   (use-package multiple-cursors
+    :ensure t
     :config
     (global-set-key (kbd "C-x m") 'mc/edit-lines))
 #+end_src
+** Pixel scroll precision mode
+#+begin_src emacs-lisp :tangle yes
+  (pixel-scroll-precision-mode)
+#+end_src
+** Robust Compile
+#+begin_src emacs-lisp :tangle yes
+  (defun robust-compile ()
+    "Traveling up the directory tree, find a Makefile and `compile'."
+    (interactive)
+    (when (locate-dominating-file default-directory "Makefile")
+      (with-temp-buffer
+        (cd (locate-dominating-file default-directory "Makefile"))
+        (call-interactively 'compile))))
+
+  (global-set-key (kbd "C-c m") 'robust-compile)
+  (setq compilation-scroll-output t)
+#+end_src
+** ef-themes
+#+begin_src emacs-lisp :tangle yes
+  (use-package ef-themes
+    :demand t
+    :ensure t
+    :config
+    ;;(ef-themes-select 'ef-deuteranopia-dark)
+    )
+#+end_src
+** Lambda-themes
+#+begin_src emacs-lisp :tangle yes
+  (use-package lambda-themes
+    :demand t
+    :ensure (lambda-themes :type git :host github :repo "lambda-emacs/lambda-themes") 
+    :custom
+    (lambda-themes-set-italic-comments t)
+    (lambda-themes-set-italic-keywords t)
+    (lambda-themes-set-variable-pitch t)
+    )
+
+#+end_src
+** rand-theme
+#+begin_src emacs-lisp :tangle yes
+  (elpaca-wait)
+  (use-package rand-theme
+    :ensure t
+    :demand t
+    :after (ef-themes lambda-themes)
+    :init
+    (setq rand-theme-unwanted '(light-blue dichromacy) )
+    :config
+    (rand-theme)
+    )
+#+end_src
+*** Some themes I've liked:
++ =ef-duo-dark=
+** Helpful
+#+begin_src emacs-lisp :tangle yes
+  (use-package helpful
+    :ensure t
+    :bind (("C-h f" . #'helpful-callable)
+           ("C-h v" . #'helpful-variable)
+           ("C-h k" . #'helpful-key)
+           ("C-c C-d" . #'helpful-at-point)
+           ("C-h F" . #'helpful-function)
+           ("C-h C" . #'helpful-command)))
+#+end_src
+** Vertico
+#+begin_src emacs-lisp :tangle yes
+  (use-package vertico
+    :ensure t
+    :custom
+    (vertico-cycle t)
+    (read-buffer-completion-ignore-case t)
+    (read-file-name-completion-ignore-case t)
+    (completion-styles '(basic substring partial-completion flex))
+    :init
+    (vertico-mode))
+#+end_src
+** Marginalia
+#+begin_src emacs-lisp :tangle yes
+  (use-package marginalia
+    :ensure t
+    :after vertico
+    :init
+    (marginalia-mode))
+#+end_src
+** COMMENT Minions
+#+begin_src emacs-lisp :tangle yes
+  (use-package minions
+    :hook (after-init . minions-mode))
+#+end_src
+** Miscellaneous Variables
+#+begin_src emacs-lisp :tangle yes
+  ;; Automatically save your place in files
+  (save-place-mode t)
+
+  ;; Save history in minibuffer to keep recent commands easily accessible
+  (savehist-mode t)
+
+  ;; Keep files up-to-date when they change outside Emacs
+  (global-auto-revert-mode t)
+
+  ;; Keep track of open files
+  (recentf-mode t)
+
+  ;; Display line numbers only when in programming modes
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+  (setq uniquify-buffer-name-style 'forward
+        window-resize-pixelwise t
+        frame-resize-pixelwise t
+        load-prefer-newer t
+        backup-by-copying t
+        ;; Backups are placed into your Emacs directory, e.g. ~/.config/emacs/backups
+        backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
+#+end_src
+** Treesit.el modes
+#+begin_src emacs-lisp :tangle yes
+  (setq major-mode-remap-alist
+        '((python-mode . python-ts-mode)
+  	(julia-mode . julia-ts-mode)))
+#+end_src
 * Utilities
+** Transient
+#+begin_src emacs-lisp :tangle yes
+  (use-package transient
+    :ensure t)
+#+end_src
 ** Helm
 [[https://emacs-helm.github.io/helm/][Helm]] is an incremental completion framework for improving the file and directory navigation.
 #+begin_src emacs-lisp :tangle yes
   (use-package helm
+    :ensure t
+    :demand t
     :bind (("C-c h" . helm-command-prefix)
-	   ("M-x" . helm-M-x)
-	   ("C-x b" . helm-mini)
-	   ("C-x C-b" . helm-buffers-list)
-	   ("C-x C-f" . helm-find-files)
-	   :map helm-find-files-map
-	   ("\t" . helm-execute-persistent-action)
-	   :map helm-map
-	   ("C-i" . helm-execute-persistent-action)
-	   ("C-z" . helm-select-action))
-    :config (setq
-	     helm-split-window-inside-p t
-	     helm-move-to-line-cycle-in-source t
-	     helm-ff-search-library-in-sexp t
-	     helm-scroll-amount 8
-	     helm-ff-file-name-history-use-recentf t
-	     helm-semantic-fuzzy-match t
-	     helm-imenu-fuzzy-match t
-	     helm-echo-input-in-header-line t
-	     helm-autoresize-max-height 0
-	     helm-autoresize-min-height 20)
+           ("M-x" . helm-M-x)
+           ("C-x b" . helm-mini)
+           ("C-x C-b" . helm-buffers-list)
+           ("C-x C-f" . helm-find-files)
+           :map helm-find-files-map
+           ("\t" . helm-execute-persistent-action)
+           :map helm-map
+           ("C-i" . helm-execute-persistent-action)
+           ("C-z" . helm-select-action))
+    :config
     (helm-autoresize-mode 1)
     (helm-mode 1)
+    (setq
+     helm-split-window-inside-p t
+     helm-move-to-line-cycle-in-source t
+     helm-ff-search-library-in-sexp t
+     helm-scroll-amount 8
+     helm-ff-file-name-history-use-recentf t
+     helm-semantic-fuzzy-match t
+     helm-imenu-fuzzy-match t
+     helm-echo-input-in-header-line t
+     helm-autoresize-max-height 0
+     helm-autoresize-min-height 20)
+    (global-set-key (kbd "C-c h") 'helm-command-prefix)
+    (global-set-key (kbd "M-x") 'helm-M-x)
+    (global-set-key (kbd "C-x b") 'helm-mini)
+    (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+    (global-set-key (kbd "C-x C-f") 'helm-find-files)
+    (define-key helm-find-files-map (kbd "\t") 'helm-execute-persistent-action)
+    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+    (define-key helm-map (kbd "C-z") 'helm-select-action)  
 
     (defun my//helm-hide-minibuffer-maybe ()
-    "Hide minibuffer in Helm session if we use the header line as input field."
-    (when (with-helm-buffer helm-echo-input-in-header-line)
-      (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
-	(overlay-put ov 'window (selected-window))
-	(overlay-put ov 'face
-		     (let ((bg-color (face-background 'default nil)))
-		       `(:background ,bg-color :foreground ,bg-color)))
-	(setq-local cursor-type nil))))
+      "Hide minibuffer in Helm session if we use the header line as input field."
+      (when (with-helm-buffer helm-echo-input-in-header-line)
+        (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+  	(overlay-put ov 'window (selected-window))
+  	(overlay-put ov 'face
+                       (let ((bg-color (face-background 'default nil)))
+                         `(:background ,bg-color :foreground ,bg-color)))
+  	(setq-local cursor-type nil))))
 
-    (add-hook 'helm-minibuffer-set-up-hook
-	    'my//helm-hide-minibuffer-maybe))
+    ;; (add-hook 'helm-minibuffer-set-up-hook
+    ;;         'my//helm-hide-minibuffer-maybe)
+    )
+
+  (use-package helm-ls-git
+    :ensure t)
+  (use-package helm-bibtex
+    :ensure t)
+  (use-package helm-xref
+    :ensure t)
+  (elpaca-wait)
 #+end_src
 ** Magit
 [[https://emacs-helm.github.io/helm/][Magit]] is a "git porcelai", i.e., a git interface in emacs.
 #+begin_src emacs-lisp :tangle yes
   (use-package magit
+    :demand t
+    :ensure t
     :bind (("M-g M-s" . magit-status)
-	   ("M-g M-c" . magit-checkout)))
+  	 ("M-g M-c" . magit-checkout))
+    )
 #+end_src
 ** Yasnippet
 [[https://github.com/joaotavora/yasnippet][Yasnippet]] is a template expansion framework in emacs. It defines convenient templates that can get expanded.
 #+begin_src emacs-lisp :tangle yes
   (use-package yasnippet
+    :demand t
+    :ensure t
     :config (yas-global-mode 1)
     (setq yas-indent-line 'fixed)
     (advice-add 'yas--auto-fill-wrapper :override #'ignore))
 
-  (use-package yasnippet-snippets)
-  (use-package yasnippet-capf)
+  (use-package yasnippet-snippets
+    :ensure t)
+  (use-package yasnippet-classic-snippets
+    :ensure t)
+  (use-package yasnippet-capf
+    :ensure t)
 #+end_src
 ** Iedit
 [[https://github.com/victorhge/iedit][Iedit]] allows editing multiple occurrences of a string in a buffer.
 #+begin_src emacs-lisp :tangle yes
-(use-package iedit)
+  (use-package iedit
+    :demand t
+    :ensure t
+    :bind ("C-;" . iedit-mode)
+    )
 #+end_src
 ** Company Mode
 [[http://company-mode.github.io/][Company]] is a completion framework in emacs. We'll set this up with each IDE we install.
 #+begin_src emacs-lisp :tangle yes
   (use-package company
+    :demand t
+    :ensure t
     :config (add-hook 'after-init-hook 'global-company-mode)
-    ;; (setq company-minimum-prefix-length 1)
+    (setq company-minimum-prefix-length 3)
+    ;; (setq company-dabbrev-other-buffers nil)
     )
   (use-package company-quickhelp
+    :ensure t
     :hook ((company-mode . company-quickhelp-mode))
     :config (setq company-quickhelp-color-background "black"))
+
+  ;; (use-package company-box
+  ;;   :hook (company-mode . company-box-mode))
 #+end_src
 ** Outline
 [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Outline-Mode.html][Outline]] is an emacs minor mode that allows for code folding.
 #+begin_src emacs-lisp :tangle yes
   (use-package outline
-    :bind (:map outline-mode-map
-  	      ("C-<tab>" . outline-cycle)
-  	      :map outline-minor-mode-map
-  	      ("C-<tab>" . outline-cycle)
-  	      )
-    :hook ((outline-minor-mode . (lambda ()
-  				 (outline-show-all)
-  				 (outline-hide-body)))
-  	 )
+    :ensure nil
+    :demand t
+    :bind ( :map outline-minor-mode-map
+  	  ("C-<iso-lefttab>" . outline-cycle)
+  	  )
+    :hook ((julia-ts-mode . outline-minor-mode))
     )
 #+end_src
-** Outshine
-#+begin_src emacs-lisp :tangle yes
-  (use-package outshine
-    :hook ((julia-mode . outshine-mode))
-    )
-#+end_src
-** Dired+
+** Dired improvements
+*** Dired+
 #+begin_src emacs-lisp :tangle yes
   (use-package dired+
+    :ensure nil
     :load-path "~/.emacs.d/locpacks/dired+")
 #+end_src
-** Dired subtree
+*** Dired subtree
 #+begin_src emacs-lisp :tangle yes
   (use-package dired-subtree
+    :ensure t
     :hook ((dired-mode . dired-hide-details-mode)
            (dired-mode . auto-revert-mode))
     :bind (:map dired-mode-map
-                ("C-j" . dired-subtree-toggle))
+                ("<tab>" . dired-subtree-toggle))
     )
   ;; C-x C-q is wdired mode
+#+end_src
+*** Dired Git
+#+begin_src emacs-lisp :tangle yes
+  (use-package dired-git-info
+    :ensure t
+    :bind (:map dired-mode-map
+                (")" . dired-git-info-mode)))
+#+end_src
+*** Dired sidebar
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package dired-sidebar
+  ;;   :bind (("C-x C-n" . dired-sidebar-toggle-with-current-directory))
+  ;;   :commands (dired-sidebar-toggle-with-current-directory)
+  ;;   :init
+  ;;   :config
+  ;;   (setq dired-sidebar-should-follow-file t))
+#+end_src
+*** COMMENT Casual Dired
+#+begin_src emacs-lisp :tangle yes
+  (use-package casual
+    :bind (:map dired-mode-map
+                ("C-o" . 'casual-dired-tmenu)))
 #+end_src
 ** Winum mode
 This assigns a number to each window.
@@ -194,51 +343,117 @@ For quickly switching to window "n", just use =C-x w <n>=, where =<n>= is the wi
 Very useful for multi monitor, multi frame workflow.
 #+begin_src emacs-lisp :tangle yes
   (use-package winum
+    :demand t
+    :ensure t
     :config (winum-mode))
 #+end_src
-** EAT
+** COMMENT EAT
 EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
 #+begin_src emacs-lisp :tangle yes
-  (quelpa '(eat :fetcher git
-                :url "https://codeberg.org/akib/emacs-eat"
-                :files ("*.el" ("term" "term/*.el") "*.texi"
-                        "*.ti" ("terminfo/e" "terminfo/e/*")
-                        ("terminfo/65" "terminfo/65/*")
-                        ("integration" "integration/*")
-                        (:exclude ".dir-locals.el" "*-tests.el"))))
+  (use-package eat
+    :ensure (eat :repo "https://codeberg.org/akib/emacs-eat"))
 #+end_src
-** Tree-sitter
+** Highlight indent guides
 #+begin_src emacs-lisp :tangle yes
-  (use-package tree-sitter
-    :hook ((python-mode . tree-sitter-hl-mode)
-           (LaTeX-mode . tree-sitter-hl-mode)
-           (matlab-mode . tree-sitter-hl-mode)
-           (emacs-lisp-mode . tree-sitter-hl-mode)
-           (js-mode . tree-sitter-hl-mode)
-           (css-mode . tree-sitter-hl-mode)
-           ))
-  ;; (use-package tree-sitter-langs)
-  (use-package ts-fold
-    ;; :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
-    :straight (ts-fold :type git :host github :repo "Nidish96/ts-fold")
-    :config (require 'ts-fold-indicators)
-    :hook ((python-mode . ts-fold-mode)
-           (LaTeX-mode . ts-fold-mode)
-           (matlab-mode . ts-fold-mode)
-           (emacs-lisp-mode . ts-fold-mode)
-           (js-mode . ts-fold-mode)
-           (css-mode . ts-fold-mode)
-  	 (julia-mode . ts-fold-mode)
-           ;; (prog-mode . ts-fold-indicators-mode)
-           ;; (LaTeX-mode . ts-fold-indicators-mode)
-           )
-    :bind (("C-<iso-lefttab>" . ts-fold-toggle))
+  ;; (use-package highlight-indentation
+  ;;   :hook (prog-mode . highlight-indentation-mode))
+
+  ;; (use-package indent-guide
+  ;;   :config
+  ;;   ;; (set-face-background 'indent-guide-face "gray")
+  ;;   :hook (prog-mode . indent-guide-mode))
+
+  (use-package indent-bars
+    :ensure t
+    :hook (prog-mode . indent-bars-mode)) ; or whichever modes you prefer
+#+end_src
+** Page-break Lines
+#+begin_src emacs-lisp :tangle yes
+  (use-package page-break-lines
+    :ensure t
+    :hook (prog-mode . page-break-lines-mode)
+    :config (custom-set-faces
+             '(page-break-lines
+               ((t
+                 (:inherit font-lock-comment-face
+                           :underline t :slant normal
+                           :weight normal :height 128)))))
+    (custom-set-variables '(page-break-lines-char 32))
+    )
+#+end_src
+** Window Purpose
+#+begin_src emacs-lisp :tangle yes
+  (use-package window-purpose
+    :ensure t
+    :bind (:map purpose-mode-map
+                ("C-x C-f" . helm-find-files))
+    :config
+    (add-to-list 'purpose-user-mode-purposes '(pdf-view-mode . pdf))
+    (add-to-list 'purpose-user-mode-purposes '(LaTeX-mode . latex))
+    (purpose-compile-user-configuration)
+    )
+#+end_src
+** Treesit-fold
+#+begin_src emacs-lisp :tangle yes
+  (use-package treesit
+    :ensure nil)
+  (elpaca-wait)
+
+  (use-package treesit-fold
+    :after treesit
+    :ensure (treesit-fold :type git :host github :repo "emacs-tree-sitter/treesit-fold")
+    :hook ((python-ts-mode . treesit-fold-mode)
+  	 (julia-ts-mode . treesit-fold-mode)
+  	 (LaTeX-mode . treesit-fold-mode)
+  	 (emacs-lisp-mode . treesit-fold-mode))
+    :bind (:map treesit-fold-mode-map
+                ("C-<tab>" . treesit-fold-toggle)))
+#+end_src
+** CRDT
+#+begin_src emacs-lisp :tangle yes
+  (use-package crdt
+    :ensure t
+    )
+#+end_src
+** Tramp
+#+begin_src emacs-lisp :tangle yes
+  (setq tramp-remote-process-environment
+        '("SHELL=/bin/bash"
+          "TERM=xterm-256color"
+          "PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin:/apps/matlab/r2022a/bin:/apps/matlab/r2023a/bin:/apps/matlab/r2024a/bin:$HOME/.local/bin"))
+
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+#+end_src
+** Calc
+*** Casual-Calc
+#+begin_src emacs-lisp :tangle yes
+  (use-package calc
+    :ensure nil
+    :defer t)
+
+  (use-package casual
+    :ensure t
+    :bind (:map
+           calc-mode-map
+           ("C-o" . casual-calc-tmenu)
+           ;; :map
+           ;; calc-alg-map 
+           ;; ("C-o" . casual-calc-tmenu)
+  	 )
+    :after (calc))
+#+end_src
+*** Math at point
+#+begin_src emacs-lisp :tangle yes
+  (unbind-key "C-z")
+  (use-package math-at-point
+    :ensure (math-at-point :type git :host github :repo "shankar2k/math-at-point")
+    :bind ("C-z =" . math-at-point)
     )
 #+end_src
 ** code-cells
 #+begin_src emacs-lisp :tangle yes
   (use-package code-cells
-    :straight (code-cells :type git :host github :repo "Nidish96/code-cells.el")
+    :ensure (:host github :repo "Nidish96/code-cells.el")
     :hook ((julia-mode . code-cells-mode)
   	 (julia-ts-mode . code-cells-mode)
   	 (python-mode . code-cells-mode)
@@ -247,106 +462,158 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
     (add-to-list 'code-cells-eval-region-commands
   	       '(julia-snail-mode . julia-snail-send-code-cell)))
 #+end_src
-** ef-themes
+** Extract File and Folder Prefix
+Primarily writing this to be used with yasnippets.
 #+begin_src emacs-lisp :tangle yes
-  (use-package ef-themes
-    :ensure t
-    :config
-    ;;(ef-themes-select 'ef-deuteranopia-dark)
-    )
-#+end_src
-** COMMENT rand-theme
-Enable to have random themes
-#+begin_src emacs-lisp :tangle yes
-  (use-package rand-theme
-    :init
-    (setq rand-theme-unwanted '(light-blue dichromacy) )
-    :config
-    (rand-theme)
-    )
+  (defun my/get-file-folder-prefix (filepath)
+    "Extract prefix from file and folder names.
+     Returns combined prefix (folder + file) if folder has prefix,
+     otherwise returns just the file prefix."
+    (let* ((dir (file-name-directory filepath))
+           (filename (file-name-nondirectory filepath))
+           (folder-name (and dir 
+                             (file-name-nondirectory 
+                              (directory-file-name dir))))
+           (file-prefix (when (string-match "^\\([a-zA-Z0-9]\\{1,2\\}\\)_" filename)
+  			(match-string 1 filename)))
+           (folder-prefix (when (and folder-name 
+                                     (string-match "^\\([a-zA-Z0-9]\\{1,2\\}\\)_" folder-name))
+                            (match-string 1 folder-name))))
+      (if folder-prefix
+          (concat folder-prefix file-prefix)
+        file-prefix)))
+
+  ;; Example usage:
+  ;; (get-file-folder-prefix "AB_trying/cd_hello.py")   ; Returns "ABcd"
+  ;; (get-file-folder-prefix "A_trying/a_hello.py")     ; Returns "Aa"
+  ;; (get-file-folder-prefix "B_test/bc_world.txt")     ; Returns "Bbc"
+  ;; (get-file-folder-prefix "normal/ab_file.py")       ; Returns "ab"
+  ;; (get-file-folder-prefix "xy_standalone.py")        ; Returns "xy"
 #+end_src
 * Org-mode
 Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+begin_src emacs-lisp :tangle yes
   (use-package org
+    :ensure nil
     :bind (("C-c l" . org-store-link)
-	   ("C-c a" . org-agenda)
-	   ("C-c c" . org-capture)
-	   ("C-c b" . org-iswitchb)
-	   ("C-c o" . org-indent-mode)
-	   :map org-mode-map
-	   ("C-c C-b" . org-beamer-select-environment)
-	   ("<f9>" . org-babel-execute-src-block-maybe)
-	   )
+           ("C-c a" . org-agenda)
+           ("C-c c" . org-capture)
+           ("C-c b" . org-iswitchb)
+           ("C-c o" . org-indent-mode)
+           :map org-mode-map
+           ("C-c C-b" . org-beamer-select-environment)
+           ("<f9>" . org-babel-execute-src-block-maybe)
+           )
+    :hook ((org-mode . visual-line-mode)
+           (org-mode . org-indent-mode))
     :config (setq org-log-done 'time
-		  org-log-done 'note
-		  org-startup-folded 'show2levels
-		  org-stuck-projects
-		  '("+PROJECT/-MAYBE-DONE" ("TODO" "STARTED") nil "\\<IGNORE\\>")
-		  org-clock-persist 'history
-		  org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")
-		  org-ellipsis "↴"
-		  org-cite-csl-styles-dir "~/Zotero/styles/")
+                  org-log-done 'note
+                  org-startup-folded 'show2levels
+                  org-stuck-projects
+                  '("+PROJECT/-MAYBE-DONE" ("TODO" "STARTED") nil "\\<IGNORE\\>")
+                  org-clock-persist 'history
+                  org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")
+                  org-ellipsis "↴"
+                  org-cite-csl-styles-dir "~/Zotero/styles/")
     ;; ▼, ↴, ⬎, ⤷, ⋱, ⤵
     (org-clock-persistence-insinuate)
-    (org-babel-do-load-languages 'org-babel-load-languages
-				 '((emacs-lisp . t)
-				   (python . t)
-				   (maxima . t)
-				   (octave . t)
-				   (matlab . t)))
+    
+    ;; inline-js
+    (add-to-list 'org-src-lang-modes '("inline-js" . javascript))
+    (defvar org-babel-default-header-args:inline-js
+      '((:results . "html")
+        (:exports . "results")))
+    (defun org-babel-execute:inline-js (body _params)
+      (format "<script type=\"text/javascript\">\n%s\n</script>" body))
+
+    ;; inline-css
+    (add-to-list 'org-src-lang-modes '("inline-css" . css))
+    (defvar org-babel-default-header-args:inline-css
+      '((:results . "html")
+        (:exports . "results")))
+    (defun org-babel-execute:inline-css (body _params)
+      (format "<style type=\"text/css\">\n%s\n</style>" body))
+
+    ;; ox
+    (eval-after-load 'ox '(require 'ox-koma-letter))
+    (eval-after-load 'ox-koma-letter
+      '(progn
+         (add-to-list 'org-latex-classes
+                      '("my-letter"
+                        "\\documentclass\{scrlttr2\}
+    \\usepackage[english]{babel}
+    \\setkomavar{frombank}{(1234)\\,567\\,890}
+    \[DEFAULT-PACKAGES]
+    \[PACKAGES]
+    \[EXTRA]"))
+
+         (setq org-koma-letter-default-class "my-letter")))
+    ;; (eval-after-load 'ox-latex
+    ;;   '(add-to-list 'org-latex-packages-alist '("AUTO" "babel" t) t)
+    ;;   )
+
+    (require 'ox-beamer)
+
+    ;; Use AucTex for the edit latex environments
+    (add-to-list 'org-src-lang-modes '("latex" . LaTeX))
+    )
+#+end_src
+** Basic Utils
+#+begin_src emacs-lisp :tangle yes
+  (use-package ox-extra
+    :ensure nil
+    :load-path "~/.emacs.d/locpacks/ox-extra"
+    :config
+    (ox-extras-activate '(ignore-headlines))
     )
 
-  (use-package org-special-block-extras
-    :hook ((org-mode . org-special-block-extras-mode))
-    )
   (use-package org-bullets
     :hook ((org-mode . (lambda () (org-bullets-mode t))))
     )
 
-  (use-package ov)
-  (use-package org-colored-text
-    :load-path "~/.emacs.d/locpacks/org-colored-text"
-    :config (org-link-set-parameters
-	     "color"
-	     (lambda (path)
-	       "No follow action.")
-	     (lambda (color description backend)
-	       (cond
-		((eq backend 'latex)                  ; added by TL
-		 (format "{\\color{%s}%s}" color description)) ; added by TL
-		((eq backend 'html)
-		 (let ((rgb (assoc color color-name-rgb-alist))
-		       r g b)
-		   (if rgb
-		       (progn
-			 (setq r (* 255 (/ (nth 1 rgb) 65535.0))
-			       g (* 255 (/ (nth 2 rgb) 65535.0))
-			       b (* 255 (/ (nth 3 rgb) 65535.0)))
-			 (format "<span style=\"color: rgb(%s,%s,%s)\">%s</span>"
-				 (truncate r) (truncate g) (truncate b)
-				 (or description color)))
-		     (format "No Color RGB for %s" color))))))))
+  ;; (use-package ov
+  ;;   :ensure nil)
+  ;; (elpaca-wait)
+  ;; (use-package org-colored-text
+  ;;   :ensure nil    
+  ;;   :load-path "~/.emacs.d/locpacks/org-colored-text"
+  ;;   :config (org-link-set-parameters
+  ;;            "color"
+  ;;            (lambda ()
+  ;;              "No follow action.")
+  ;;            (lambda (color description backend)
+  ;;              (cond
+  ;;               ((eq backend 'latex)                  ; added by TL
+  ;;                (format "{\\color{%s}%s}" color description)) ; added by TL
+  ;;               ((eq backend 'html)
+  ;;                (let ((rgb (assoc color color-name-rgb-alist))
+  ;;                      r g b)
+  ;;                  (if rgb
+  ;;                      (progn
+  ;;                        (setq r (* 255 (/ (nth 1 rgb) 65535.0))
+  ;;                              g (* 255 (/ (nth 2 rgb) 65535.0))
+  ;;                              b (* 255 (/ (nth 3 rgb) 65535.0)))
+  ;;                        (format "<span style=\"color: rgb(%s,%s,%s)\">%s</span>"
+  ;;                                (truncate r) (truncate g) (truncate b)
+  ;;                                (or description color)))
+  ;;                    (format "No Color RGB for %s" color))))))))
 
   ;; oer-reveal
-  (use-package oer-reveal)
+  (use-package oer-reveal) 
 
-  (use-package laas
-    :hook ((latex-mode . laas-mode)
-           (tex-mode . laas-mode)
-           (org-mode . laas-mode))
-    :config (aas-global-mode)
-    (aas-set-snippets 'laas-mode
-      :cond #'laas-object-on-left-condition
-      "tcr" (lambda () (interactive) (laas-wrap-previous-object "textcolor{red}")))
-    ) 
+  ;; (use-package org-appear
+  ;;   :hook ((org-mode . org-appear-mode)))
 #+end_src
-
-#+RESULTS:
-| laas-mode | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | (closure (t) nil (font-lock-add-keywords nil '((next-color-link (0 'org-link t))) t)) | (lambda nil (org-bullets-mode t)) | org-special-block-extras-mode | org-clock-load | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes |
-
+** COMMENT Org special block extras
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-special-block-extras
+    :hook ((org-mode . org-special-block-extras-mode))
+    :config
+    (setcdr org-special-block-extras-mode-map nil) ;; get rid of annoying key bindings
+    )
+#+end_src
 ** Org-Roam
-[[https://www.orgroam.com/][Org-Roam]] is based on the Zettelkasten note keeping technique, helping you thoughts and ideas.
+[[https://www.orgroam.com/][Org-Roam]] is based on the Zettelkasten note keeping technique, helping you organize thoughts and ideas.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-roam
     :init (setq org-roam-v2-ack t)
@@ -360,11 +627,20 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
     (org-roam-db-autosync-mode)
     )
 
-  (require 'org-roam-node)
+  ;; (require 'org-roam-node)
 
+  ;; (use-package org-roam-ui
+  ;;   :quelpa (org-roam-ui :fetcher github :repo "org-roam/org-roam-ui"))
+  (use-package org-roam-ui
+    :ensure (:host github :repo "org-roam/org-roam-ui")) ;; optional: load on startup
+
+  ;; (use-package escalator
+  ;;   :quelpa (escalator :fetcher github
+  ;;                      :repo "ag91/escalator")
+  ;;   :bind (("C-c n f" . escalator-helm-org-roam))
+  ;;   )
   (use-package escalator
-    :quelpa (escalator :fetcher github
-                       :repo "ag91/escalator")
+    :ensure (:host github :repo "ag91/escalator")
     :bind (("C-c n f" . escalator-helm-org-roam))
     )
 
@@ -394,7 +670,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
                                     (my/org-roam-list-notes-by-tag "Life")))))
 
   ;; Build the agenda list the first time for the session
-  (my/org-roam-refresh-agenda-list)
+  ;; (my/org-roam-refresh-agenda-list)
 
   ;; Find by tags
   (defun my/org-roam-project-finalize-hook ()
@@ -481,19 +757,195 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
 #+end_src
 ** Org-Ref
 #+begin_src emacs-lisp :tangle yes
-  (use-package helm-bibtex)
+  (use-package ivy-bibtex) ;; required for org-ref
 
   (use-package org-ref
-    :ensure t
+    :after no-littering
+    ;; :quelpa (org-ref :fetcher github
+    ;;                  :repo "jkitchin/org-ref")
     :bind (:map org-mode-map
                 ("C-c ]" . 'org-ref-insert-link))
     :config
+    (require 'compat-31)
     (require 'org-ref-helm)
+    ;; (require 'org-ref-refproc)
+    ;; (add-hook 'org-export-before-parsing-functions 'org-ref-refproc)
     (setq org-ref-insert-cite-function (lambda () (org-cite-insert nil)))
-
-    (setq org-latex-prefer-user-labels t)
-    (setq org-html-prefer-user-labels t)
     )
+#+end_src
+** Org-Download
++ *Usage*:
+  1. Call `timed-screenshot`.
+  2. Enter a delay time in seconds. I recommend 2.
+  3. Navigate "out" of emacs into the pdf or web page you want to screenshot and wait for the timeout to end.
+  4. The screenshot utility will be triggered automatically. You can customize `org-download-screenshot-method` for this.
+  5. Take the screenshot.
+  6. Navigate back to emacs. A minibuffer prompt asking you to enter a filename will be waiting for you. 
+  7. Enter a filename relative to current directory and hit enter. 
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-download
+    :config
+    (defun timed-screenshot (&optional dsec)
+      "Make a timed screenshot with org-download-screenshot and query
+    user for save filename. 
+     A time delay is introduced so that you may switch workspace/bring
+    the relevant pdf to front. 
+
+     DSEC is delay in seconds.
+  " 
+      (interactive "nEnter delay time (sec): ")
+      (message "Use this delay to open the correct file")
+      (run-with-timer (or dsec 2) nil (lambda () (org-download-screenshot)))
+      (sit-for dsec)
+      (org-download-rename-last-file)
+      )
+    )
+#+end_src
+** Org-AucTex Keybindings
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-auctex-keys
+    :ensure (org-auctex-keys :type git :host github :repo "fniessen/org-auctex-key-bindings"))
+#+end_src
+** [[https://orgmode.org/worg/org-tutorials/org-outside-org.html][Org outside Org]]
+#+begin_src emacs-lisp :tangle yes
+  (use-package outshine
+    :hook (;; (outline-minor-mode . outshine-mode)
+  	 (matlab-mode . outline-minor-mode)
+  	 (python-ts-mode . outline-minor-mode)
+  	 )
+    :config
+    (require 'outorg)
+    :bind (("C-c @ @" . outline-mark-subtree))
+    )
+
+  (use-package poporg
+    :bind ("C-c /" . poporg-dwim)
+    :hook (poporg-edit . (lambda ()
+  			 (let* ((ovl (nth 1 (car poporg-data)))
+  				(bufr (overlay-buffer ovl))
+  				(mmd (buffer-local-value 'major-mode bufr)))
+  			   (pcase mmd
+  			     ('julia-ts-mode (markdown-mode))
+  			     (otherwise (org-mode))
+  			     )
+  			   )
+  			 )
+  		     )
+    )
+
+  (use-package navi-mode
+    :bind (:map matlab-mode-map
+  	      ("C-c @ n" . navi-search-and-switch))
+    )
+
+  ;; (add-hook 'outline-minor-mode-hook
+  ;;           (defun baba/outline-overview ()
+  ;;             "Show only outline headings."
+  ;;             (outline-show-all)
+  ;;             (outline-hide-body)
+  ;;             ))
+#+end_src
+** COMMENT valign for visual alignment
+#+begin_src emacs-lisp :tangle yes
+  (use-package valign
+    ;; :hook (org-mode . valign-mode)
+    )
+#+end_src
+** Subfigure link for org latex export
+#+begin_src emacs-lisp :tangle yes
+  (org-link-set-parameters
+   "subfig"
+   :follow (lambda (file) (find-file file))
+   :face '(:foreground "chocolate" :weight bold :underline t)
+   :display 'full
+   :export (lambda (file desc backend)
+  	   (when (eq backend 'latex)
+  	     (if (string-match ">(\\(.+\\))" desc)
+  		 (concat "\\subfigure[" (replace-regexp-in-string "\s+>(.+)" "" desc) "]"
+  			 "{\\includegraphics"
+  			 "["
+  			 (match-string 1 desc)
+  			 "]"
+  			 "{"
+  			 file
+  			 "}}")
+  	       (format "\\subfigure[%s]{\\includegraphics{%s}}" desc file))))
+   )
+
+  (org-link-set-parameters
+   "subfigure"
+   :follow (lambda (file) (find-file file))
+   :face '(:foreground "chocolate" :weight bold :underline t)
+   :display 'full
+   :export (lambda (file desc backend)
+  	   (when (eq backend 'latex)
+  	     (if (string-match ">(\\(.+\\))" desc)
+  		 (let* ((str1 (replace-regexp-in-string "\s+>(.+)" "" desc))
+  			(str2 (match-string 1 desc)))
+  		   (concat "\\begin{subfigure}{" str2 "}\n"
+  			   "\\centering\n"
+  			   "\\includegraphics[width=\\linewidth]{" file "}\n"
+  			   "\\caption{" str1 "}\n"
+  			   "\\end{subfigure}%"))
+  	       (concat "\\begin{subfigure}{\\linewidth}\n"
+  		       "\\centering\n"
+  		       "\\includegraphics[width=\\linewidth]{" file "}\n"
+  		       "\\caption{" desc "}\n"
+  		       "\\end{subfigure}%") 
+  	       )))
+   )
+#+end_src
+** Org-noter
+#+begin_src emacs-lisp :tangle yes
+  (use-package nov)
+  (use-package djvu)
+  ;; (use-package org-pdftools)
+  (use-package org-noter)
+  ;; (use-package org-noter-pdftools)
+#+end_src
+** Org-macros
++ Find it here: https://github.com/fniessen/org-macros/blob/master/org/org-macros.setup
+** Extra Utilities from the WWW
+*** Jump to next/previous table.
+#+begin_src emacs-lisp :tangle yes
+  ;; From: https://www.reddit.com/r/orgmode/comments/ot8g0j/orgnexttable_and_orgprevioustable_jump_to/
+  (defun org-next-table (&optional arg) 
+    "Jump to the next table.
+
+  With a prefix argument ARG, jump forward ARG many tables."
+    (interactive "p")
+    (cl-loop
+     for n below (abs arg)
+     with backward = (< arg 0)
+     with search-fn = (if backward #'re-search-backward #'re-search-forward)
+     do  
+     (let ((pt (point)))
+       
+       (when (org-at-table-p)
+         (funcall search-fn org-table-border-regexp nil :move))
+       if (funcall search-fn org-table-line-regexp nil t) do
+       (when (org-invisible-p)
+         (org-reveal t)
+         (org-fold-show-entry)
+         (unless (org-at-table-p)
+  	 (cl-decf n)))
+       else return (goto-char pt)
+       finally (when backward
+                 (when (funcall search-fn org-table-border-regexp nil :move)
+  		 (forward-line))
+                 (forward-char)))))
+
+  (defun org-previous-table (&optional arg)
+    "Jump to the previous table.
+
+  With a prefix argument ARG, jump backward ARG many tables."
+    (interactive "p")
+    (org-next-table (- arg)))
+#+end_src
+** org-reveal
+#+begin_src emacs-lisp :tangle yes
+  (use-package ox-reveal)
+  (use-package org-re-reveal)
 #+end_src
 * Integrated Development Environments
 ** Latex
@@ -504,15 +956,26 @@ Also install [[https://mg.readthedocs.io/latexmk.html][latexmk]] for building.
 [[https://www.gnu.org/software/auctex/reftex.html][RefTeX]] is a package that manages references, labels, citations, etc.
 [[https://github.com/alexeyr/company-auctex][Company-auctex]] is a company backend for auctex.
 #+begin_src emacs-lisp :tangle yes
-  (use-package auctex
-    :hook ((TeX-mode . auto-fill-mode)
+  (use-package cdlatex)
+
+  (use-package latex
+    :ensure auctex
+    :hook (;; (TeX-mode . auto-fill-mode)
+  	 (TeX-mode . flyspell-mode)
            (TeX-mode . auto-revert-mode)
            (LaTeX-mode . visual-line-mode)
            (LaTeX-mode . LaTeX-math-mode)
-           (LaTeX-mode . prettify-symbols-mode)
            (LaTeX-mode . reftex-mode)
-           (doc-view-mode . auto-revert-mode))
-    :config (defvar preview-default-preamble)
+  	 (LaTeX-mode . eglot-ensure)
+           (doc-view-mode . auto-revert-mode))  
+    :bind (:map LaTeX-mode-map
+  	      ("C-M-a" . (lambda () (interactive)
+  			   (backward-char)
+  			   (LaTeX-find-matching-begin)))
+  	      ("C-M-g" . (lambda () (interactive)
+  			   (forward-char)
+  			   (LaTeX-find-matching-end))))
+    :config  (defvar preview-default-preamble)
     (eval-after-load "preview"
       '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
     )
@@ -548,57 +1011,77 @@ Ensure you install the following first
 #+end_src
 #+begin_src emacs-lisp :tangle yes
   (use-package pdf-tools
-      :hook ((pdf-view-mode . (lambda () (display-line-numbers-mode -1))))
-      )
+    :ensure t
+    :hook ((pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
+  	 (pdf-view-mode . auto-revert-mode)
+  	 )
+    :config
+    (pdf-tools-install :no-query)
 
-  (pdf-tools-install)
-  (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
+    ;; Make pdf-tools default viewer for TeX compile
+    (setq TeX-view-program-selection '((output-pdf "PDF Tools")) TeX-source-correlate-start-server t)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
 
-  ;; Make pdf-tools default viewer for TeX compile
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools")) TeX-source-correlate-start-server t)
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-  (add-hook 'TeX-mode 'pdf-sync-minor-mode)
-  (define-key TeX-mode-map (kbd "C-c M-v") 'pdf-sync-display-pdf)
-  (define-key TeX-mode-map (kbd "C-c v") 'pdf-sync-forward-search)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+    (add-hook 'TeX-mode 'pdf-sync-minor-mode)
+    (define-key TeX-mode-map (kbd "C-c M-v") 'pdf-sync-display-pdf)
+    (define-key TeX-mode-map (kbd "C-c v") 'pdf-sync-forward-search)  
+    )
 #+end_src
 *** Custom Latex Navigation
 Add code which helps to navigate through tex files
 #+begin_src emacs-lisp :tangle yes
-  (setq my/latex-section-head-string "^\s*\\\\section")
+  ;; (setq my/latex-section-head-string "^\s*\\\\section")
 
-  (defun my/latex-go-up-section ()
-    "Go up a section"
-    (interactive)
-    (or (re-search-backward my/latex-section-head-string (point-min) t) (goto-char (point-min)))
-    (previous-line))
+  ;; (defun my/latex-go-up-section ()
+  ;;   "Go up a section"
+  ;;   (interactive)
+  ;;   (or (re-search-backward my/latex-section-head-string (point-min) t) (goto-char (point-min)))
+  ;;   (forward-line -1))
 
-  (defun my/latex-go-down-section ()
-    "Go down one section"
-    (interactive)
-    (or (re-search-forward my/latex-section-head-string (point-max) t) (goto-char (point-max)))
-    (next-line)
-    (next-line))
+  ;; (defun my/latex-go-down-section ()
+  ;;   "Go down one section"
+  ;;   (interactive)
+  ;;   (or (re-search-forward my/latex-section-head-string (point-max) t) (goto-char (point-max)))
+  ;;   (forward-line)
+  ;;   (forward-line))
 
-  (define-key LaTeX-mode-map (kbd "M-v") 'my/latex-go-up-section)
-  (define-key LaTeX-mode-map (kbd "C-v") 'my/latex-go-down-section)
+  ;; (define-key LaTeX-mode-map (kbd "M-v") 'my/latex-go-up-section)
+  ;; (define-key LaTeX-mode-map (kbd "C-v") 'my/latex-go-down-section)
 #+end_src
 *** CART
 [[https://github.com/Nidish96/cart.el][cart.el]] is an emacs package that allows you to enter calibrated coordinate-based tikz graphics elements into latex documents.
 Quite useful for beamer presentations.
 #+begin_src emacs-lisp :tangle yes
+  ;; (use-package cart
+  ;;   :quelpa (cart :fetcher github
+  ;;                 :repo "Nidish96/cart.el")
+  ;;   :hook ((LaTeX-mode . cart-mode)))
+
   (use-package cart
-    :quelpa (cart :fetcher github
-		  :repo "Nidish96/cart.el")
-    :hook ((LaTeX-mode-hook . cart-mode)))
+    :ensure (:host github :repo "Nidish96/cart.el")
+    :hook ((LaTeX-mode . cart-mode)))
 #+end_src
 *** Auto activating Snippets
 #+begin_src emacs-lisp :tangle yes
-  (use-package laas
-    :hook (LaTeX-mode . laas-mode)
+  (use-package aas
+    :hook (org-mode . aas-activate-for-major-mode)
     :config
+    (aas-set-snippets 'org-mode
+      :cond (lambda () (not (org-in-block-p '("src"))))
+
+      ;; "$" (lambda () (interactive) (yas-expand-snippet "\\\\($1\\\\)$0"))
+      "<equ" (lambda () (interactive)
+  	     (yas-expand-snippet "\\begin{${1:align}}\n  $0\n\\end{$1}"))    
+      )
+    )
+
+  (use-package laas
+    :hook ((LaTeX-mode . laas-mode)
+           (TeX-mode . laas-mode)
+  	 (org-mode . laas-mode))
+    :config ;; (aas-global-mode)
     (aas-set-snippets 'laas-mode
       :cond #'texmathp
       "supp" "\\supp"
@@ -606,21 +1089,34 @@ Quite useful for beamer presentations.
       "O1" "\\mathcal{O}(1)"
       "Olog" "\\mathcal{O}(\\log n)"
       "Olon" "\\mathcal{O}(n\\log n)"
+      ";c" "\\chi"
+      ";x" "\\xi"
+      "[[" "\\begin{bmatrix} "
+      "]]" " \\end{bmatrix}"
+      "tcr" (lambda () (interactive) (laas-wrap-previous-object "textcolor{red}"))
+      "'m" (lambda () (interactive) (laas-wrap-previous-object "mx"))
+      "'v" (lambda () (interactive) (laas-wrap-previous-object "vc"))
+      "'V" (lambda () (interactive) (laas-wrap-previous-object "uc"))
+      "'M" (lambda () (interactive) (laas-wrap-previous-object "mc"))
       ;; bind to functions
-      "Sum" (lambda () (interactive)
-              (yas-expand-snippet "\\sum_{$1}^{$2} $0"))
-      "Span" (lambda () (interactive)
-               (yas-expand-snippet "\\Span($1)$0"))
+      "sum" (lambda () (interactive) (yas-expand-snippet "\\sum_{$1}^{$2} $0"))
+      "Sum" (lambda () (interactive) (yas-expand-snippet "\\sum\\limits_{$1}^{$2} $0"))
+      "Span" (lambda () (interactive) (yas-expand-snippet "\\Span($1)$0"))
+      "ee" (lambda () (interactive) (yas-expand-snippet "e^{$1}$0"))
+      "tcc" (lambda () (interactive) (yas-expand-snippet "\\textcolor{$1}{$2}$0"))
+
       ;; add accent snippets
       :cond #'laas-object-on-left-condition
       "qq" (lambda () (interactive) (laas-wrap-previous-object "sqrt"))
       "'B" (lambda () (interactive) (laas-wrap-previous-object "mathbb"))
-      "'o" (lambda () (interactive) (laas-wrap-previous-object "operatorname")))
+      "'o" (lambda () (interactive) (laas-wrap-previous-object "operatorname"))
+      "HAT" (lambda () (interactive) (laas-wrap-previous-object "widehat"))
+      )
     (setq laas-enable-auto-space nil)
     )
 
   (use-package lazytab
-    :straight (lazytab :type git :host github :repo "Nidish96/lazytab")
+    :ensure (lazytab :type git :host github :repo "Nidish96/lazytab")
     ;; :quelpa ((lazytab :fetcher github
     ;;                   :repo "Nidish96/lazytab")
     ;;          :upgrade t)
@@ -634,74 +1130,71 @@ Quite useful for beamer presentations.
            ;;                    (unless (yas-expand)
            ;;                      (goto-char p1)))))))
            )
-    :hook ((LaTeX-mode . orgtbl-mode)
-           (LaTeX-mode . lazytab-mode))
+    ;; :hook ((LaTeX-mode . orgtbl-mode)
+    ;;        (LaTeX-mode . lazytab-mode))
     )
 
   ;; indent-for-tab-command, lazytab-org-table-next-field-maybe
   ;; (quelpa '(lazytab :fetcher github
   ;; 		  :repo "Nidish96/lazytab"))
 #+end_src
+
 ** Matlab
 [[https://matlab-emacs.sourceforge.net/index.shtml][Matlab-mode]] is an emacs mode for editing & running matlab scripts. You can launch an inferior shell, do debugging, etc.
 I've setup shortcuts to be identical to what we have with the matlab gui.
 #+begin_src emacs-lisp :tangle yes
-  (use-package matlab
-    :ensure matlab-mode
+  (use-package matlab-mode
+    :ensure t
     :init
     (setq matlab-purpose-loaded-once nil)
     (require 'matlab-shell)
-    (require 'matlab-sections)    
+    (require 'matlab-sections)
     :bind (:map matlab-mode-map
-                ("C-c C-b" . (lambda () (interactive)
-                               (save-window-excursion
-                                 (matlab-shell-run-code-section))
-                               (matlab-sections-forward-section 1 t)))
-                ("C-<return>" . matlab-shell-run-code-section)
                 ("C-M-<return>" . matlab-shell-run-region-or-line)
                 ("M-." . my-matlab-shell-locate-this-fcn)
                 ("C-c <return>" . (lambda () "Run Buffer"
                                     (interactive)
                                     (save-buffer)
-                                    (matlab-shell-send-command (file-name-base (buffer-file-name)))))
+                                    (matlab-shell-send-command
+                                     (file-name-base (buffer-file-name)))))
                 ("C-c C-m" . (lambda () "Run Buffer"
                                (interactive)
                                (save-buffer)
-                               (matlab-shell-send-command (file-name-base (buffer-file-name)))))
+                               (matlab-shell-send-command
+                                (file-name-base (buffer-file-name)))))
+                ("<f5>" . (lambda () "Run Buffer"
+                            (interactive)
+                            (save-buffer)
+                            (matlab-shell-send-command
+                             (file-name-base (buffer-file-name)))))
+
+                ;; ("C-x ]" . 'scroll-up-command)
+                ;; ("C-x [" . 'scroll-down-command)
+
+  	      ("C-<return>" . matlab-sections-run-section)
+                ("C-c C-b" . (lambda () (interactive)
+                               (save-window-excursion
+  			       (matlab-sections-run-section))
+                               (matlab-sections-forward-section 1)))
+                ("C-x n c" . 'matlab-sections-narrow-to-section)
+                ("M-[" . 'backward-paragraph)
+                ("M-]" . 'forward-paragraph)
+
                 ("C-c ]" . 'matlab-sections-forward-section)
                 ("C-c [" . 'matlab-sections-backward-section)
   	      
                 ("C-c <down>" . 'matlab-sections-move-section-down)
                 ("C-c <up>" . 'matlab-sections-move-section-up)
+
                 ("C-c C-r" . my-matlab-shell-run-region-or-line)
+                ("<f9>" . my-matlab-shell-run-region-or-line)
                 ("M-p" . (lambda () (interactive) (matlab-backward-sexp)))
                 ("M-n" . (lambda () (interactive) (matlab-forward-sexp)))
-                ("C-c C-p" . #'matlab-shell)
-                ("C-<tab>" . ts-fold-toggle)
-                ("C-M-f" . (lambda () (interactive)
-                             (let* ((nd (tree-sitter-node-at-pos))
-                                    (ndp (tsc-get-parent nd)))
-                               (when (eq (point) (tsc-node-start-position ndp))
-                                 (setq nd ndp))
-                               (if (or (eq (tsc-node-type nd) 'source_file)
-                                       (not (eq (point) (tsc-node-start-position nd))))
-                                   (forward-sexp)
-                                 (goto-char (tsc-node-end-position nd))))))
-                ("C-M-b" . (lambda () (interactive)
-                             (let* ((nd (save-excursion (backward-char)
-                                                        (tree-sitter-node-at-pos)))
-                                    (ndp (tsc-get-parent nd)))
-                               (when (eq (point) (tsc-node-end-position ndp))
-                                 (setq nd ndp))
-                               (if (or (eq (tsc-node-type nd) 'source_file)
-                                       (not (eq (point) (tsc-node-end-position nd))))
-                                   (backward-sexp)
-                                 (goto-char (tsc-node-start-position nd))))))
+                ("C-c C-z" . #'matlab-shell)
                 ("C-c d" . (lambda () (interactive) (matlab-shell-send-command
                                                      (concat "help "
                                                              (matlab-read-word-at-point)))))
-
-  	      ("C-c 1" . (lambda () (interactive) (matlab-shell-send-command
+                ("C-c 1" . (lambda () (interactive) (matlab-shell-send-command
                                                      (concat (matlab-read-word-at-point)
                                                              "=1"))))
                 ("C-c 0" . (lambda () (interactive) (matlab-shell-send-command
@@ -714,6 +1207,12 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                                                   (buffer-substring
                                                    (region-beginning) (region-end))
                                                 (matlab-read-word-at-point)) ")"))))
+  	      ("C-c u" . (lambda () (interactive)
+                             (matlab-shell-send-command
+                              (concat "unique(" (if (region-active-p)
+                                                    (buffer-substring
+                                                     (region-beginning) (region-end))
+  						(matlab-read-word-at-point)) ")"))))
                 ("C-c r" . (lambda () (interactive)
                              (matlab-shell-send-command (if (region-active-p)
                                                             (buffer-substring
@@ -725,7 +1224,7 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
                                                      (concat "cd " (file-name-directory
                                                                     (buffer-file-name))))))
                 ("C-c C-x c" . #'comment-region)
-                ("C-c C-x u" . #'uncomment-region)	      
+                ("C-c C-x u" . #'uncomment-region)
                 )
     :config
     (defun my-matlab-shell-locate-this-fcn (&optional fcn)
@@ -748,27 +1247,58 @@ I've setup shortcuts to be identical to what we have with the matlab gui.
           (setq p1 (line-end-position)))
         (matlab-shell-send-command (buffer-substring p0 p1))))
     (setq matlab-file-font-lock-keywords matlab-file-really-gaudy-font-lock-keywords)
+    :hook ((find-file . (lambda ()
+                          (when (and (not matlab-purpose-loaded-once)
+                                     (eq major-mode 'matlab-mode)
+                                     (y-or-n-p "Load matlab purpose layout?"))
+                            (purpose-mode)
+                            (setq matlab-purpose-loaded-once t)
+                            (let ((dirname (file-name-directory buffer-file-name))
+                                  (buffname (buffer-file-name)))
+                              (purpose-load-window-layout "matlab")
+                              (other-window 2) (dired dirname)
+                              (other-window -2)
+                              (require 'matlab-shell)
+                              (when (and (not (matlab-shell-active-p))
+                                         (y-or-n-p "Start Matlab?"))
+                                (other-window 3)
+                                (purpose-toggle-window-purpose-dedicated)
+                                (find-file buffname) (matlab-shell)
+                                (purpose-toggle-window-purpose-dedicated))
+                              (other-window 1) (find-file buffname)))))
+           (matlab-sections-minor-mode . (lambda () (interactive)
+  					 (font-lock-add-keywords
+  					  nil
+  					  `((,matlab-sections-section-break-regexp
+  					     1 'matlab-sections-section-break-face prepend)))
+  					 (font-lock-flush)))
+           )
     )
 
-  (add-hook 'matlab-mode-hook
-            (defun baba-outline-matlab ()
-              "Fold definitions in Matlab."
-              (setq outline-regexp
-                    (rx (or
-                         (group
-                          (group (* space))
-                          bow
-                          (or "classdef" "function" "properties" "methods"
-                              "for" "if" "switch" "case" "while" "end" "%%")
-                          eow))))
-              ;; (baba/outline-overview)
-              ))
+  ;; (add-hook 'matlab-mode-hook
+  ;;           (defun baba-outline-matlab ()
+  ;;             "Fold definitions in Matlab."
+  ;;             (setq outline-regexp
+  ;;                   (rx (or
+  ;;                        (group
+  ;;                         (group (* space))
+  ;;                         bow
+  ;;                         (or "classdef" "function" "properties" "methods"
+  ;;                             "for" "if" "switch" "case" "while" "end" "%%")
+  ;;                         eow))))
+  ;;             ;; (baba/outline-overview)
+  ;;             ))
 
   (set-display-table-slot
    standard-display-table
    'selective-display
    (let ((face-offset (* (face-id 'shadow) (ash 1 22))))
      (vconcat (mapcar (lambda (c) (+ face-offset c)) " +"))))
+#+end_src
+** LSP
+#+begin_src emacs-lisp :tangle yes
+  (use-package lsp-mode
+    :config (setq lsp-auto-guess-root t))
 #+end_src
 ** Python
 You need to install the following from pip:
@@ -777,17 +1307,91 @@ You need to install the following from pip:
 + debugpy
   Ensure "/home/nbalaji/.local/bin" is added to path.
 #+begin_src emacs-lisp :tangle yes
+  ;; (use-package python-mode
+  ;;   :init
+  ;;   (setq python-purpose-loaded-once nil)
+
+  ;;   :custom
+  ;;   ;; NOTE: Set these if Python 3 is called "python3" on your system!
+  ;;   ;; (python-shell-interpreter "python3")
+  ;;   ;; (dap-python-executable "python3")
+  ;;   (dap-python-debugger 'debugpy)
+  ;;   :config
+  ;;   ;; (require 'dap-python)
+  ;;   :bind (:map python-ts-mode-map
+  ;; 	      ("C-c <return>" . #'code-cells-eval-whole-buffer)
+  ;;   	    ("C-<return>" . #'code-cells-eval)
+  ;;   	    ("C-c C-b" . #'code-cells-eval-and-step)
+  ;;               ("C-c r" . (lambda () (interactive)
+  ;;                            (if (region-active-p)
+  ;;                                (python-shell-send-region
+  ;;                                 (region-beginning)
+  ;;                                 (region-end))
+  ;;                              (python-shell-send-string (thing-at-point 'symbol)))
+  ;;                            ))
+  ;;               ("C-c s" . (lambda () (interactive)
+  ;;                            (let ((symb (if (region-active-p)
+  ;;                                            (buffer-substring (region-beginning) (region-end))
+  ;;                                          (thing-at-point 'symbol))))
+  ;;                              (python-shell-send-string
+  ;;                               (concat "np.array(" symb ").shape")))
+  ;;                            ))
+  ;;               ("C-c 0" . (lambda () (interactive)
+  ;;                            (let ((symb (if (region-active-p)
+  ;;                                            (buffer-substring (region-beginning) (region-end))
+  ;;                                          (thing-at-point 'symbol))))
+  ;;                              (python-shell-send-string (concat symb "=0")))))
+  ;;               ("C-c 1" . (lambda () (interactive)
+  ;;                            (let ((symb (if (region-active-p)
+  ;;                                            (buffer-substring (region-beginning) (region-end))
+  ;;                                          (thing-at-point 'symbol))))
+  ;;                              (python-shell-send-string (concat symb "=1")))))
+  ;;               ("C-c D" . (lambda () (interactive)
+  ;;                            (python-shell-send-string "import os")
+  ;;                            (python-shell-send-string
+  ;;                             (format "os.chdir('%s')"
+  ;;                                     (file-name-directory (buffer-file-name))))
+  ;;                            (python-shell-send-string "os.getcwd()")))
+  ;;               )
+  ;;   :hook (;; (python-mode . lsp-deferred)
+  ;;          (python-mode . (lambda () (outline-minor-mode -1)))
+  ;;          (find-file . (lambda ()
+  ;;                         (when (and (not python-purpose-loaded-once)
+  ;;                                    (eq major-mode 'python-mode)
+  ;;                                    (y-or-n-p "Load python purpose layout?"))
+  ;;                           (purpose-mode)
+  ;;                           (setq python-purpose-loaded-once t)
+  ;;                           (when (and (not (python-shell-get-buffer))
+  ;;                                      (y-or-n-p "Start python shell?"))
+  ;;                             (run-python))
+  ;;                           (delete-other-windows)
+  ;;                           (purpose-load-window-layout "python"))))
+  ;;          (before-save . (lambda () (when (eq major-mode 'python-mode) (whitespace-cleanup))))
+  ;;          ;; (help-mode . (lambda () (interactive)
+  ;;          ;;                (when (string= (buffer-name) "*Python Doc*")
+  ;;          ;;                  (python-mode))))
+  ;;          )
+  ;;   )
+
+  ;; (use-package importmagic
+  ;;   :hook
+  ;;   ((python-mode . importmagic-mode))
+  ;;   :config
+  ;;   (require 'importmagic)
+  ;;   :bind (:map python-mode-map
+  ;; 	      ("C-c C-f" . 'importmagic-fix-symbol-at-point))
+  ;;   )
+
   (use-package elpy
-    :ensure t
     :config (elpy-enable)
     :hook ((python-mode . elpy-mode)
-           (python-ts-mode . elpy-mode)
-           (elpy-mode . outline-minor-mode)
-           (elpy-mode . treesit-fold-mode))
+  	 (python-ts-mode . elpy-mode)
+  	 (elpy-mode . outline-minor-mode)
+  	 (elpy-mode . treesit-fold-mode))
     :bind (:map elpy-mode-map
-    	    ("C-c <return>" . #'code-cells-eval-whole-buffer)
-      	      ("C-<return>" . #'code-cells-eval)
-      	      ("C-c C-b" . #'code-cells-eval-and-step)
+  	      ("C-c <return>" . #'code-cells-eval-whole-buffer)
+    	      ("C-<return>" . #'code-cells-eval)
+    	      ("C-c C-b" . #'code-cells-eval-and-step)
                 ("C-c r" . (lambda () (interactive)
                              (if (region-active-p)
                                  (python-shell-send-region
@@ -798,7 +1402,7 @@ You need to install the following from pip:
                 ("C-c s" . (lambda () (interactive)
                              (let ((symb (if (region-active-p)
                                              (buffer-substring (region-beginning)
-    							   (region-end))
+  							     (region-end))
                                            (thing-at-point 'symbol))))
                                (python-shell-send-string
                                 (concat "np.array(" symb ").shape")))
@@ -806,13 +1410,13 @@ You need to install the following from pip:
                 ("C-c 0" . (lambda () (interactive)
                              (let ((symb (if (region-active-p)
                                              (buffer-substring (region-beginning)
-    							   (region-end))
+  							     (region-end))
                                            (thing-at-point 'symbol))))
                                (python-shell-send-string (concat symb "=0")))))
                 ("C-c 1" . (lambda () (interactive)
                              (let ((symb (if (region-active-p)
                                              (buffer-substring (region-beginning)
-    							   (region-end))
+  							     (region-end))
                                            (thing-at-point 'symbol))))
                                (python-shell-send-string (concat symb "=1")))))
                 ("C-c D" . (lambda () (interactive)
@@ -821,11 +1425,14 @@ You need to install the following from pip:
                               (format "os.chdir('%s')"
                                       (file-name-directory (buffer-file-name))))
                              (python-shell-send-string "os.getcwd()")))
-    	    ("C-c C-x c" . #'comment-region)
-    	    )
+  	      ("C-c C-x c" . #'comment-region)
+  	      )
     )
+
+  ;; (tree-sitter-hl-add-patterns 'python
+  ;;   [(identifier) @variable])
 #+end_src
-** RealGUD
+** COMMENT RealGUD
 [[https://github.com/realgud/realgud][RealGUD]] is an emacs "frontend" for debugging. It works with all the classic tools (Python, C/C++, FORTRAN, etc.).
 MATLAB debugging is built into matlab-mode above. 
 #+begin_src emacs-lisp :tangle yes
@@ -834,126 +1441,347 @@ MATLAB debugging is built into matlab-mode above.
 ** C/C++
 #+begin_src emacs-lisp :tangle yes
   (use-package cc-mode
+    :ensure nil
     :bind (:map c-mode-map
-	   ("C-c RET" . compile)
-	   :map c++-mode-map
-	   ("C-c RET" . compile)))
+  	   ("C-c RET" . compile)
+  	   :map c++-mode-map
+  	   ("C-c RET" . compile)))
 #+end_src
-** Highlight indent guides
+** Maxima
 #+begin_src emacs-lisp :tangle yes
-  (use-package indent-guide
+  (use-package maxima
     :config
-    ;; (set-face-background 'indent-guide-face "gray")
-    :hook (prog-mode . indent-guide-mode))
+    (add-to-list 'auto-mode-alist '("\\.ma[cx]" . maxima-mode))
+    (add-to-list 'auto-mode-alist '("\\.wxm" . maxima-mode)))
 
-  (use-package highlight-indentation
-    :hook (prog-mode . highlight-indentation-mode))
+  ;; (use-package imaxima
+  ;;   ;; :load-path "/home/nidish/Software/maxima-5.47.0/bin/interfaces/emacs/imaxima"
+  ;;   :load-path "/snap/wxmaxima/current/usr/share/emacs/site-lisp"
+  ;;   )
+
+
+  (use-package company-maxima)
+#+end_src
+** FreeFem++
+#+begin_src emacs-lisp :tangle yes
+  ;; (add-to-list 'auto-mode-alist '("\\.edp" . matlab-mode))
+
+  (use-package freefem++-mode
+    :ensure (freefem++-mode :type git :host github :repo "rrgalvan/freefem-mode")
+    ;; "FreeFem/FreeFem-parser-emacs")
+    :config
+    ;; (add-to-list 'auto-mode-alist '("\\.edp$" . freefem++-mode))
+    (setq freefempp-program "FreeFem++-nw")
+    )
 #+end_src
 ** Julia
 #+begin_src emacs-lisp :tangle yes
   (use-package vterm
     :ensure t)
 
+  (use-package lsp-julia
+    :config (setq lsp-julia-default-environment "~/.julia/environments/v1.12")
+    )
+
+  (use-package julia-ts-mode)
+
   (use-package julia-mode
-    :ensure t
-    :hook ((julia-mode . outline-minor-mode)
-  	 (julia-mode . tree-sitter-mode)
-  	 (julia-mode . ts-fold-mode)
-  	 (julia-mode . tree-sitter-hl-mode)
+    :hook ((julia-ts-mode . outline-minor-mode)
   	 (julia-mode . (lambda () (setq company-minimum-prefix-length 3)))
   	 ;; (julia-mode . lsp-deferred)
   	 )
     :bind (:map julia-mode-map
   	      ("C-c [" . 'outline-previous-heading)
   	      ("C-c ]" . 'outline-next-heading)
-  	      ("C-M-f" . (lambda () (interactive)
-  			   (let* ((nd (tree-sitter-node-at-pos))
-  				  (ndp (tsc-get-parent nd)))
-  			     (when (eq (point) (tsc-node-start-position ndp))
-  			       (setq nd ndp))
-  			     (if (or (eq (tsc-node-type nd) 'source_file)
-  				     (not (eq (point) (tsc-node-start-position nd))))
-  				 (forward-sexp)
-  			       (goto-char (tsc-node-end-position nd))))))
-  	      ("C-M-b" . (lambda () (interactive)
-  			   (let* ((nd (save-excursion (backward-char)
-  						      (tree-sitter-node-at-pos)))
-  				  (ndp (tsc-get-parent nd)))
-  			     (when (eq (point) (tsc-node-end-position ndp))
-  			       (setq nd ndp))
-  			     (if (or (eq (tsc-node-type nd) 'source_file)
-  				     (not (eq (point) (tsc-node-end-position nd))))
-  				 (backward-sexp)
-  			       (goto-char (tsc-node-start-position nd))))))
   	      ;; ("M-." . #'lsp-find-definition)
   	      )
+    :config (require 'lsp-julia)
     )
 
   ;; Custom Syntax Highlighting
-  (tree-sitter-hl-add-patterns 'julia
-    [(call_expression (identifier) @function.call)])
+  ;; (tree-sitter-hl-add-patterns 'julia
+  ;;   [(call_expression (identifier) @function.call)])
 
-  (tree-sitter-hl-add-patterns 'julia
-    [("begin" @keyword)
-     ("end" @keyword)])
+  ;; (tree-sitter-hl-add-patterns 'julia
+  ;;   [("begin" @keyword)
+  ;;    ("end" @keyword)])
 #+end_src
 *** Julia-Snail Config
 #+begin_src emacs-lisp :tangle yes
   (use-package julia-snail
-    :hook (julia-mode . julia-snail-mode)
+    :hook ((julia-mode . julia-snail-mode)
+  	 (julia-snail-mode . (lambda ()
+  			       (setq outline-search-function nil)
+  			       (outline-show-all)
+  			       (outline-hide-body)
+  			       )))
+
     :bind (:map julia-snail-mode-map
   	      ("C-c <return>" . #'code-cells-eval-whole-buffer)
   	      ("C-<return>" . #'code-cells-eval)
   	      ("C-c C-b" . #'code-cells-eval-and-step)
   	      ("C-c r" . (lambda () (interactive)
-    			   (if (region-active-p)
-    			       (julia-snail-send-region)
-    			     (julia-snail--send-to-repl (thing-at-point 'symbol)))
-    			   ))
-    	      ("C-c s" . (lambda () (interactive)
-    			   (julia-snail--send-to-repl
-    			     (concat "size("
-    				     (if (region-active-p)
-    					 (buffer-substring (mark) (point))
-    				       (thing-at-point 'symbol))
-    				     ")"))))
+  			   (if (region-active-p)
+  			       (julia-snail-send-region)
+  			     (julia-snail--send-to-repl (thing-at-point 'symbol)))
+  			   ))
+  	      ("C-c s" . (lambda () (interactive)
+  			   (julia-snail--send-to-repl
+  			     (concat "size("
+  				     (if (region-active-p)
+  					 (buffer-substring (mark) (point))
+  				       (thing-at-point 'symbol))
+  				     ")"))))
     	      ("C-c t" . (lambda () (interactive)
-    			   (julia-snail--send-to-repl
-    			     (concat "typeof("
-    				     (if (region-active-p)
-    					 (buffer-substring (mark) (point))
-    				       (thing-at-point 'symbol))
-    				     ")"))))
+  			   (julia-snail--send-to-repl
+  			     (concat "typeof("
+  				     (if (region-active-p)
+  					 (buffer-substring (mark) (point))
+  				       (thing-at-point 'symbol))
+  				     ")"))))
   	      ("C-c 0" . (lambda () (interactive)
-    			   (julia-snail--send-to-repl
-    			     (concat (if (region-active-p)
-    					 (buffer-substring (mark) (point))
-    				       (thing-at-point 'symbol))
-    				     "=0"))))
+
+  			   (julia-snail--send-to-repl
+  			     (let* ((symb (if (region-active-p)
+  					      (buffer-substring (mark) (point))
+  					    (thing-at-point 'symbol))))
+  			       (concat symb "=isa(" symb ",Bool) ? false : 0")
+  			       )
+  			     )))
   	      ("C-c 1" . (lambda () (interactive)
-    			   (julia-snail--send-to-repl
-    			     (concat (if (region-active-p)
-    					 (buffer-substring (mark) (point))
-    				       (thing-at-point 'symbol))
-    				     "=1"))))	      
+  			   (julia-snail--send-to-repl
+  			     (let* ((symb (if (region-active-p)
+  					      (buffer-substring (mark) (point))
+  					    (thing-at-point 'symbol))))
+  			       (concat symb "=isa(" symb ",Bool) ? true : 1")
+  			       )
+  			     )))
+  	      ("C-c d" . (lambda () (interactive)
+  			   (let ((symb (if (region-active-p)
+  					   (buffer-substring (mark) (point))
+  					 (thing-at-point 'symbol))))
+  			     (when (y-or-n-p
+  				    (format "Want to delete binding for %s?"
+  					    symb))
+  			       (julia-snail--send-to-repl
+  				 (format "Base.delete_binding(Main, :%s)" symb))
+  			       )
+  			     )
+  			   ))
   	      )
     :config
     ;; (setq julia-snail-multimedia-enable t)
     )
 #+end_src
+*** COMMENT Julia-Repl Setup
+#+begin_src emacs-lisp :tangle yes
+  (use-package julia-repl
+    :hook (julia-mode . julia-repl-mode)
+    :bind (:map julia-repl-mode-map
+  	      ("C-c <return>" . (lambda () (interactive)
+    				  (my/julia-sendsubtree (point-min)
+    							(point-max))))
+    	      ("C-<return>" . (lambda () (interactive) (save-excursion
+    							 (my/julia-sendsubtree))))
+    	      ("C-c C-b" . (lambda () (interactive) (my/julia-sendsubtree)
+    			     (forward-line)))
+  	      ("C-c r" . (lambda () (interactive)
+    			   (if (region-active-p)
+  			       (julia-repl--send-string (mark) (point))
+    			     (julia-repl--send-string (thing-at-point 'symbol)))
+    			   ))
+    	      ("C-c s" . (lambda () (interactive)
+    			   (julia-repl--send-string
+    			    (concat "size("
+    				    (if (region-active-p)
+    					(buffer-substring (mark) (point))
+    				      (thing-at-point 'symbol))
+    				    ")"))))
+    	      ("C-c t" . (lambda () (interactive)
+    			   (julia-repl--send-string
+    			    (concat "typeof("
+    				    (if (region-active-p)
+    					(buffer-substring (mark) (point))
+    				      (thing-at-point 'symbol))
+    				    ")"))))
+  	      ("C-c 0" . (lambda () (interactive)
+    			   (julia-repl--send-string
+    			    (concat (if (region-active-p)
+    					(buffer-substring (mark) (point))
+    				      (thing-at-point 'symbol))
+    				    "=0"))))
+  	      ("C-c 1" . (lambda () (interactive)
+    			   (julia-repl--send-string
+    			    (concat (if (region-active-p)
+    					(buffer-substring (mark) (point))
+    				      (thing-at-point 'symbol))
+    				    "=1"))))
+  	      )
+    :config
+    (defun my/julia-sendsubtree (&optional p0 p1)
+      "Send current subtree to julia and wait in the end"
+      (interactive)
+      (let* ((p0 (or p0 (outline-previous-heading) (point-min)))
+      	   (p1 (or p1 (outline-next-heading) (point-max))))
+        (julia-repl--send-string (buffer-substring p0 p1))
+        )
+      )
+    )
+#+end_src
 *** COMMENT eglot
 #+begin_src emacs-lisp :tangle yes
   (use-package eglot-jl
+    :defer t
     :init (eglot-jl-init)
-    :hook ((julia-mode . eglot-ensure))
+    (setq warning-suppress-types '((eglot-jl flymake)))
+    ;; :hook ((julia-mode . eglot-ensure)
+    ;; 	 (julia-ts-mode . eglot-ensure))
+    :config
+    (setq eglot-jl-use-flymake nil)
     )
 #+end_src
+** Dape
+#+begin_src emacs-lisp :tangle yes
+  (use-package dape)
 
+  (use-package repeat
+    :ensure nil
+    :config
+    (repeat-mode))
+#+end_src
+** Typst
++ Source: https://oylenshpeegul.gitlab.io/blog/posts/20250427/
+#+begin_src emacs-lisp :tangle yes
+  (use-package typst-ts-mode
+    :custom
+    (typst-ts-mode-enable-raw-blocks-highlight t)
+    :hook ((typst-ts-mode . (lambda () (setq company-minimum-prefix-length 3)))
+    	 (typst-ts-mode . aas-activate-for-major-mode)
+    	 )
+    :config
+    (add-to-list 'treesit-language-source-alist
+    	       '(typst "https://github.com/uben0/tree-sitter-typst"))
+    (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu)
+    (setq typst-ts-preview-function
+    	(lambda (fname)
+    	  (pop-to-buffer (save-window-excursion (find-file fname)))))
+
+    (defun my/typst-in-math-p ()
+      "Check if the point is inside a Typst math block using tree-sitter."
+      (when (and (eq major-mode 'typst-ts-mode)
+                 (fboundp 'treesit-node-at))
+        (let ((node (treesit-node-at (point))))
+          ;; Check if the current node or any parent is a math node
+          (while (and node (not (string-equal (treesit-node-type node) "math")))
+        	  (setq node (treesit-node-parent node)))
+          node)))
+
+    (defun my/typst-wrap-object (wrapper)
+      "Wrap the tree-sitter object before point with WRAPPER.
+    Example: x -> dot(x), (a+b) -> dot(a+b)"
+      (interactive)
+      (let* ((node (treesit-node-at (1- (point))))
+             (start (treesit-node-start node))
+             (end (treesit-node-end node))
+             (text (buffer-substring-no-properties start end)))
+        (delete-region start end)
+        (insert (format "%s(%s)" wrapper text))))
+
+    (aas-set-snippets 'typst-ts-mode
+      "tcr" (lambda () (interactive) (yas-expand-snippet "#text(red)[$0]"))
+      "tcb" (lambda () (interactive) (yas-expand-snippet "#text(blue)[$0]"))
+      "tcg" (lambda () (interactive) (yas-expand-snippet "#text(green)[$0]"))
+
+      :cond #'my/typst-in-math-p
+      "sr" "^2"
+      "cb" "^3"
+      "inf" "infinity"
+      ";i" "in"
+      ";*" "times"
+      "pm" "plus.minus"
+
+      ;; Common Greek (Lowercase)
+      ";a" "alpha"
+      ";b" "beta"
+      ";g" "gamma"
+      ";d" "delta"
+      ";;d" "partial"
+      ";e" "epsilon"
+      ";z" "zeta"
+      ";h" "eta"
+      ";q" "theta"
+      ";t" "tau"
+      ";;i" "iota"
+      ";k" "kappa"
+      ";l" "lambda"
+      ";;l" "ell"
+      ";m" "mu"
+      ";n" "nu"
+      ";x" "xi"
+      ";p" "pi"
+      ";r" "rho"
+      ";s" "sigma"
+      ";o" "omega"
+      ";f" "phi"
+      ";y" "psi"
+
+      ;; Common Greek (Uppercase)
+      ";N" "nabla"
+      ";G" "Gamma"
+      ";D" "Delta"
+      ";L" "Lambda"
+      ";S" "Sigma"
+      ";O" "Omega"
+      ";F" "Phi"
+      ";Q" "Theta"
+
+      ;; wraps
+      "'." (lambda () (interactive) (my/typst-wrap-object "dot"))
+      "':" (lambda () (interactive) (my/typst-wrap-object "dot.double"))
+      "hat" (lambda () (interactive) (my/typst-wrap-object "hat"))
+      "bar" (lambda () (interactive) (my/typst-wrap-object "bar"))
+      "'c" (lambda () (interactive) (my/typst-wrap-object "cal"))
+      "'b" (lambda () (interactive) (my/typst-wrap-object "bb"))
+      "'v" (lambda () (interactive) (my/typst-wrap-object "vc"))
+      "'m" (lambda () (interactive) (my/typst-wrap-object "mx"))
+      "'}" (lambda () (interactive) (my/typst-wrap-object "underbrace"))
+
+      ;; miscellanies
+      "[[" (lambda () (interactive) (yas-expand-snippet "mat($0)"))
+      )
+    )
+
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs '(typst-ts-mode "tinymist"))
+    )
+
+  (use-package ox-typst)
+#+end_src
+*** preview
+#+begin_src emacs-lisp :tangle yes
+  (use-package typst-preview
+    :after typst-ts-mode
+    :bind (:map typst-ts-mode-map
+  	      ("C-c v" . 'typst-preview-send-position))
+    )
+#+end_src
 * Miscellanies
 ** OpenFOAM
 [[https://github.com/ralph-schleicher/emacs-openfoam][emacs-openfoam]] is a package for editing openfoam files.
 #+begin_src emacs-lisp :tangle yes
   (use-package openfoam)
+#+end_src
+** Abaqus
+#+begin_src emacs-lisp :tangle yes
+  (use-package abaqus-mode
+    :ensure nil
+    :load-path "~/.emacs.d/locpacks/abaqus-mode"
+    :hook ((abaqus-mode . turn-on-font-lock))
+    :init (require 'abaqus-mode)
+    :config
+    (autoload 'abaqus-mode "abaqus" "Enter abaqus mode." t)
+    (add-to-list 'auto-mode-alist '("\\.inp\\'" . abaqus-mode))
+    )
 #+end_src
 ** CSV Editing
 #+begin_src emacs-lisp :tangle yes
@@ -963,40 +1791,115 @@ MATLAB debugging is built into matlab-mode above.
       (interactive (list (when current-prefix-arg (read-char "Separator: "))))
       (font-lock-mode 1)
       (let* ((separator (or separator ?\,))
-	     (n (count-matches (string separator) (pos-bol) (pos-eol)))
-	     (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
-			   collect (apply #'color-rgb-to-hex 
-					  (color-hsl-to-rgb i 0.3 0.5)))))
-	(cl-loop for i from 2 to n by 2 
-	      for c in colors
-	      for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
-	      do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
+             (n (count-matches (string separator) (pos-bol) (pos-eol)))
+             (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
+                              collect (apply #'color-rgb-to-hex 
+                                             (color-hsl-to-rgb i 0.3 0.5)))))
+        (cl-loop for i from 2 to n by 2 
+                 for c in colors
+                 for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
+                 do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
     :hook ((csv-mode . csv-highlight)
-	   (csv-mode . csv-align-mode)
-	   (csv-mode . (lambda () (interactive) (toggle-truncate-lines nil)))
-	   )
+           (csv-mode . csv-align-mode)
+           (csv-mode . (lambda () (interactive) (toggle-truncate-lines t)))
+           )
+    :bind (:map csv-mode-map
+  	      ("<right>" . csv-forward-field)
+  	      ("<left>" . csv-backward-field)
+  	      )
     )
 #+end_src
 ** Rainbow Delimiters Mode
 #+begin_src emacs-lisp :tangle yes
   (use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
+    :hook ((prog-mode . rainbow-delimiters-mode)
+           (LaTeX-mode . rainbow-delimiters-mode))
+    )
 #+end_src
-** Poporg
+** Web Development
 #+begin_src emacs-lisp :tangle yes
-  (use-package poporg
-    :bind ("C-c /" . poporg-dwim)
-    :hook (poporg-edit . (lambda ()
-    			 (let* ((ovl (nth 1 (car poporg-data)))
-    				(bufr (overlay-buffer ovl))
-    				(mmd (buffer-local-value 'major-mode bufr)))
-    			   (pcase mmd
-    			     ('julia-mode (markdown-mode))
-    			     (otherwise (org-mode))
-    			     )
-    			   )
-    			 )
-    		     )
+  (use-package simple-httpd)
+
+  (use-package json-mode)
+
+  (add-hook 'js-mode-hook #'lsp)
+  (add-hook 'js-mode-hook (lambda () (setq js-indent-level 2)))
+  (add-hook 'css-mode-hook #'lsp)
+
+  (with-eval-after-load 'js
+  (define-key js-mode-map (kbd "M-.") nil))
+
+  (use-package company-web)
+#+end_src
+** Debug Adapter Protocol
+#+begin_src emacs-lisp :tangle yes
+  (use-package dap-mode
+    ;; :custom
+    ;; (dap-auto-configure-features '(sessions locals tooltip))
+    
+    :config
+    ;; (require 'dap-firefox)
+    (require 'dap-ui)
+    (require 'dap-julia)
+
+    ;; (setq lsp-enable-dap-auto-configure nil)  
+    )
+#+end_src
+** Recentf
+#+begin_src emacs-lisp :tangle yes
+  (recentf-mode t)
+#+end_src
+** Gnuplot
+#+begin_src emacs-lisp :tangle yes
+  (use-package gnuplot
+    :config
+    ;; (autoload 'gnuplot-mode "gnuplot" "Gnuplot major mode" t)
+    ;; (autoload 'gnuplot-make-buffer "gnuplot" "open a buffer in gnuplot-mode" t)
+    (setq auto-mode-alist (append '(("\\.gp$" . gnuplot-mode)) auto-mode-alist))
+    )
+#+end_src
+** Treesit-auto
+#+begin_src emacs-lisp :tangle yes
+  (use-package treesit-auto
+    :ensure t
+    :bind (("C-M-f" . (lambda () (interactive)
+  		      (if (treesit-parser-list)
+    			  (let* ((nd (treesit-node-at (point)))
+    				 (ndp (treesit-node-parent nd))
+    				 (p0 (treesit-node-start ndp))
+    				 (p1 (treesit-node-end ndp)))
+  			    (if (equal (treesit-node-type ndp) "source_file")
+  				(forward-sexp) (goto-char p1)))
+  			(forward-sexp)
+  			)
+  		      ))
+    	 ("C-M-b" . (lambda () (interactive)
+  		      (if (treesit-parser-list)
+    			  (let* ((nd (treesit-node-at (point)))
+    				 (ndp (treesit-node-parent nd))
+    				 (p0 (treesit-node-start ndp))
+    				 (p1 (treesit-node-end ndp)))
+  			    (if (equal (treesit-node-type ndp) "source_file")
+  				(backward-sexp) (goto-char p0)))
+  			(backward-sexp)
+  			))))
+    :custom
+    (treesit-auto-install 'prompt)
+    :config (global-treesit-auto-mode)
+    )
+#+end_src
+* AI Integration
+** chatgpt-shell
+#+begin_src emacs-lisp :tangle yes
+  (use-package gptel
+    ;; :ensure (gptel :type git :host github :repo "karthink/gptel")
+    :config
+    (setq
+     gptel-model   'sonar
+     gptel-backend (gptel-make-perplexity "IITM-Perplexity"     ;Any name you want
+  		   :key "YOUR_PERPLEXITY_API_KEY"
+  		   :stream t)
+     )
     )
 #+end_src
 * Init File Stuff
@@ -1018,11 +1921,67 @@ MATLAB debugging is built into matlab-mode above.
 #+begin_src emacs-lisp :tangle yes
   (setq startdir default-directory)
   (find-file "~/.emacs.d/config.org")
-  (dired startdir)
+  ;; (dired startdir)
 #+end_src
+* Org Babel
+#+begin_src emacs-lisp :tangle yes
+  (org-babel-do-load-languages 'org-babel-load-languages
+  			     '((emacs-lisp . t)
+  			       (python . t)
+  			       (maxima . t)
+  			       (octave . t)
+  			       (julia . t)
+  			       (matlab . t)
+  			       (latex . t)))
+#+end_src
+* Chat with Emacs
+#+begin_src emacs-lisp :tangle yes
+  (setq erc-server "irc.libera.chat"
+        erc-nick "nidish96"
+        erc-user-full-name "Nidish Narayanaa Balaji"
+        erc-track-shorten-start 8
+        erc-autojoin-channels-alist '(("irc.libera.chat" "#emacs" "##emacsewoks"))
+        erc-kill-buffer-on-part t
+        erc-auto-query 'bury)
 
+  ;; The following are commented out by default, but users of other
+  ;; non-Emacs IRC clients might find them useful.
+  ;; Kill buffers for channels after /part
+  ;; (setq erc-kill-buffer-on-part t)
+  ;; Kill buffers for private queries after quitting the server
+  ;; (setq erc-kill-queries-on-quit t)
+  ;; Kill buffers for server messages after quitting the server
+  ;; (setq erc-kill-server-buffer-on-quit t)
+
+  ;; (erc-notify-mode)
+  ;; ;; it is not possible to set erc-log-mode variable directly 
+  ;; (erc-log-mode) 
+  ;; ;; The directory should be created by user.
+  ;; (setq erc-log-channels-directory "~/.erc/logs/")
+  ;; (setq erc-generate-log-file-name-function (quote erc-generate-log-file-name-with-date))
+  ;; (setq erc-save-buffer-on-part nil)
+  ;; (setq erc-save-queries-on-quit nil)
+  ;; (setq erc-log-write-after-insert t)
+  ;; (setq erc-log-write-after-send t)
+#+end_src
+** Instructions
+1. Register nickname with: (https://libera.chat/guides/registration)
+   /msg NickServ REGISTER <yourpasswd> <youremail@example.com>
+2. Register channel with:
+   1. First join it:
+      /join ##emacsewoks
+   2. Register with:
+      /msg ChanServ REGISTER ##emacsewoks
+   
 * Bug fixes
-** Prevent company from completing numbers
+** Other window scrolling
+#+begin_src emacs-lisp :tangle yes
+  (use-package sow
+    :ensure nil
+    :load-path "~/.emacs.d/locpacks/sow"
+    :config (sow-mode t))
+#+end_src
+** COMMENT Prevent company from completing numbers
 #+begin_src emacs-lisp :tangle yes
   (push (apply-partially #'cl-remove-if
                          (lambda (c)
@@ -1033,7 +1992,27 @@ MATLAB debugging is built into matlab-mode above.
         company-transformers)
 
 #+end_src
-
+** Speed up line move
+#+begin_src emacs-lisp :tangle yes
+  ;; (setq auto-window-vscroll nil)
+#+end_src
+** Disable org-persist
+#+begin_src emacs-lisp :tangle yes
+  (remove-hook 'kill-emacs-hook #'org-persist-write-all)
+#+end_src
+** gc cons threshold
+#+begin_src emacs-lisp :tangle yes
+  (setq gc-cons-threshold (* 50 1024 1024))
+#+end_src
+** COMMENT Wierd Org latex compile bug
+#+begin_src emacs-lisp :tangle yes
+  (advice-add 'org-latex-export-to-latex :after
+              (lambda (&rest args)
+                (let* ((texfile (expand-file-name
+                                 (org-export-output-file-name ".tex")))
+                       (default-directory (file-name-directory texfile)))
+                  (org-latex-compile texfile))))
+#+end_src
 * Some inspiring Emacs quotes ;-)
 ** Neal Stephenson, In the Beginning was the Command Line (1998)
 #+BEGIN_QUOTE

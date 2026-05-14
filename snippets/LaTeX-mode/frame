@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: frame
+# key: frame
+# --
+\begin{frame}
+  \frametitle{${1:\insertsectionnumber.\protect~${2:\insertsection}}}
+  ${3:\framesubtitle{${4:\insertsectionnumber.\insertsubsectionnumber.\protect~\insertsubsection}}}
+  $0
+\end{frame}

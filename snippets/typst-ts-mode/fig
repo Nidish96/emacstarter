@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: figure
+# key: fig
+# --
+#figure(
+    image($1),
+    caption: [$0]
+) ${2:<fig:$3>}

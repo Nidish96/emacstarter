@@ -1,0 +1,66 @@
+# -*- mode: snippet -*-
+# name: <letter
+# key: <letter
+# --
+* Preamble                                                         :noexport:
+
+${1:#+title:  ${2:Letter Title}}
+#+date: ${3:`(format-time-string "%d %b, %Y")`}
+#+author: ${4:Nidish Narayanaa Balaji}
+
+#+subject: SUB: ${5:Subject Line}
+#+place: ${6:Chennai, Tamil Nadu, India}
+
+#+lco: DINmtext
+#+options: after-closing-order:(my_after_signature ps cc encl)
+#+options: ':t backaddress:t subject:centered
+
+#+latex_class_options: [10pt]
+#+latex_header: \setkomavar{firsthead}{}
+#+latex_header: \AtBeginLetter{\renewcommand{\raggedsignature}{\raggedright}}
+#+latex_header: \usepackage[margin=1in]{geometry}
+# #+options: after-closing-order:(my_after_signature ps cc encl)
+
+* Recipient Address						         :to:
+${7:Recipient Address}
+
+* From                                                                 :from:
+${8:Department of Aerospace Engineering
+IIT Madras
+Chennai 600036
+INDIA}
+
+* Location                                                         :location:
+#+begin_center
+*IIT Madras*
+#+attr_latex: :width 0.2\textwidth
+[[file:/home/nidish/Documents/IITM-AE/Templates/iitm-logo.png]]
+#+end_center
+
+* Dear ${9:Addressee},
+$0
+
+* Yours truly,                                                      :closing:
+#+latex: \vspace{0.5cm}
+
+${10:Nidish Narayanaa Balaji}\\\
+${11:Assistant Professor, Department of Aerospace Engineering\\\
+Indian Institute of Technology Madras\\\
++91-44-2257-4042, [[mailto:nidish@iitm.ac.in][nidish@iitm.ac.in]]
+}
+* some arbitrary LaTeX code                              :my_after_signature:
+#+begin_export latex
+% this special heading was added dynamically.
+#+end_export
+* PS                                                                     :ps:
+# PS: "PS" is not typeset automatically by KOMA-Script
+
+# @@latex:\noindent@@ PPS: This is a feature!
+* CC                                                                     :cc:
+# Paris and Lawrence.
+* ENCL                                                                 :encl:
+# See also The Tragedy of Romeo and Juliet
+* some more arbitrary LaTeX code                               :after_letter:
+#+begin_export latex
+% here we can place random LaTeX code, e.g. including PDFs via the pdfpages package.
+#+end_export

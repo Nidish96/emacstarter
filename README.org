@@ -7,11 +7,30 @@
 
 This is a basic config file we've created to make it easy to start with emacs.
 It's actually a little more than just "basic". It should have most of the immediate needs for usage.
+It uses [[https://github.com/progfolio/elpaca][elpaca]] for package management. I decided on elpaca after much thought and trials with package.el , quelpa, straight.el, and combinations thereof. 
 
 * Instructions
 1. Ensure you have the latest emacs installed.
-   This config is tested with *Emacs 29.1 on Ubuntu 23.10*.
-2. I'd recommend installing [[https://tug.org/texlive/][Texlive]] for compiling latex documents. Also install [[https://mg.readthedocs.io/latexmk.html][latexmk]] for compilation "on the fly".
+   This config is tested with *Emacs 29.1 on Ubuntu 23.10*, and *Emacs 30.2 on Ubuntu 25.10*.
+2. Install some general utilities 
+   #+begin_src bash
+     # Almalinux
+     yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel clang cmake libtool libvterm-devel
+
+     # Ubuntu
+     apt install autoconf automake gcc libpng-dev make pkgconf libpoppler-dev libpoppler-glib-dev zlib1g-dev clang cmake libtool libvterm-dev libtree-sitter-dev
+   #+end_src
+3. Create a directory called "org-roam" in your home.
+   #+begin_src bash
+     mkdir ~/org-roam
+   #+end_src
+4. Install python language servers with pip. pyenv setups are possible. You don't need all of these, read more on what you need before doing this. If you're not sure, start with =python3-lsp=. 
+   #+begin_src bash
+     pip install 'python-language-server[all]' python-lsp-server debugpy pyright
+
+     sudo apt install python3-pylsp
+   #+end_src
+5. I'd recommend installing [[https://tug.org/texlive/][Texlive]] for compiling latex documents. Also install [[https://mg.readthedocs.io/latexmk.html][latexmk]] for compilation "on the fly".
    The following is a recommended configuration for latexmk, which you can put in ~/.latexmkrc
    #+begin_src bash
      $pdf_mode = 1;
@@ -26,33 +45,16 @@ It's actually a little more than just "basic". It should have most of the immedi
      
      $pdf_previewer = "cat > /dev/null";
    #+end_src
-3. Install some utilities for pdfs through
-   #+begin_src bash
-     # Almalinux
-     yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel clang cmake libtool libvterm-devel
+6. Clone the contents of this repository into your ~/.emacs.d folder.
+7. Fire up emacs a couple times to ensure everything is installed properly.
 
-     # Ubuntu
-     apt install autoconf automake gcc libpng-dev make pkgconf libpoppler-dev libpoppler-glib-dev zlib1g-dev clang cmake libtool libvterm-dev libtree-sitter-dev
-   #+end_src
-4. Create a directory called "org-roam" in your home.
-   #+begin_src bash
-     mkdir ~/org-roam
-   #+end_src
-5. Install python language servers with pip. pyenv setups are possible.
-   #+begin_src bash
-     pip install 'python-language-server[all]' python-lsp-server debugpy pyright
+** Note on treesit modes
+The config uses =treesit.el= extensively for syntax highlighting and navigation. You might have to install some of these grammars manually with =M-x treesit-install-language-grammar= . 
 
-     sudo apt install python3-pylsp
-   #+end_src
-6. Install 
-7. Clone the contents of this repository into your ~/.emacs.d folder.
-8. Fire up emacs a couple times to ensure everything is installed properly.
 * List of Features Included in Config
 The following are the list of features enabled by the config in addition to emacs defaults.
 1. Packages:
-   + The GNU and MELPA repositories are loaded.
-   + ~use-package~ is used for package management.
-   + ~quelpa~ and ~quelpa-use-package~ are installed to directly install from web sources.
+   + [[https://github.com/progfolio/elpaca][~elpaca~]] is used for package management. 
 2. Utilities
    + ~helm~ is installed as the navigation engine throughout.
    + ~magit~ is installed as the front-end for git.
@@ -61,6 +63,7 @@ The following are the list of features enabled by the config in addition to emac
    + ~company~ is installed as the completion framework.
    + ~dired-subtree~ is installed for directory navigation.
 3. Org-Mode Ecosystem
+   + A dev branch of org is installed. This provides live latex previews. 
    + The look and feel of org files is improved with fancy bullets and colors
    + Org roam is installed as a personal knowledge management system
    + Org tree slide is installed for presenting org files
@@ -68,10 +71,13 @@ The following are the list of features enabled by the config in addition to emac
 4. Programming/Development IDEs
    + A Latex IDE is setup using ~AucTeX~ and ~pdf-tools~
    + A MATLAB IDE is setup using ~matlab-mode~
-   + A Python IDE is setup using the Language Server Protocol (LSP).
+   + A Python IDE is setup using the Language Server Protocol (LSP or eglot may be used).
+   + A Julia IDE is setup using ~julia-snail~.
+   + A Typst IDE is setup using ~typst-ts-mode~.
 5. Miscellanies
    + The ~openfoam~ package is installed for editing openfoam input files.
    + ~csv-mode~ is installed to work with csv files.
+   + Etc. 
 6. The whole config is written in an org file that is automatically tangled into elisp code. This makes it easier to maintain the emacs config.
 * Usage Tips and Tricks
 1. Some files may not have extensions but you may still want them to open in a particular mode.

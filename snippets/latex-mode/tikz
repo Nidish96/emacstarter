@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: tikz
+# key: tikz
+# --
+\begin{tikzpicture}[overlay,remember picture]
+  \pgftransformshift{\pgfpointanchor{current page}{center}}
+  $0
+\end{tikzpicture}

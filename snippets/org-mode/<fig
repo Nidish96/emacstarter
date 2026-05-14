@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: figure
+# key: <fig
+# --
+#+name: ${1:fig:${2:label}}
+#+attr_html: ${3::width ${4:90%}}
+#+attr_latex: ${5::placement [${6:!h}]} ${7::width ${8:${9:0.9}\textwidth}}
+#+caption: $0

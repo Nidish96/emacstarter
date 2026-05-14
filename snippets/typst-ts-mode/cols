@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: cols
+# key: cols
+# --
+#grid(columns: ${1:(1fr,1fr)}, column-gutter: 1em,
+    [
+        $0
+    ],
+    [
+    
+    ]
+)
