@@ -424,32 +424,6 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
 
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
 #+end_src
-** Calc
-*** Casual-Calc
-#+begin_src emacs-lisp :tangle yes
-  (use-package calc
-    :ensure nil
-    :defer t)
-
-  (use-package casual
-    :ensure t
-    :bind (:map
-           calc-mode-map
-           ("C-o" . casual-calc-tmenu)
-           ;; :map
-           ;; calc-alg-map 
-           ;; ("C-o" . casual-calc-tmenu)
-  	 )
-    :after (calc))
-#+end_src
-*** Math at point
-#+begin_src emacs-lisp :tangle yes
-  (unbind-key "C-z")
-  (use-package math-at-point
-    :ensure (math-at-point :type git :host github :repo "shankar2k/math-at-point")
-    :bind ("C-z =" . math-at-point)
-    )
-#+end_src
 ** code-cells
 #+begin_src emacs-lisp :tangle yes
   (use-package code-cells
@@ -568,8 +542,10 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
     )
 
   (use-package org-bullets
+    :ensure t
     :hook ((org-mode . (lambda () (org-bullets-mode t))))
     )
+  (elpaca-wait)
 
   ;; (use-package ov
   ;;   :ensure nil)
@@ -1784,6 +1760,8 @@ MATLAB debugging is built into matlab-mode above.
 ** CSV Editing
 #+begin_src emacs-lisp :tangle yes
   (use-package csv-mode
+    :ensure t
+    :demand t
     :config
     (defun csv-highlight (&optional separator)
       (interactive (list (when current-prefix-arg (read-char "Separator: "))))
@@ -1893,8 +1871,34 @@ MATLAB debugging is built into matlab-mode above.
       (treesit-install-language-grammar 'typst))    
     )
 #+end_src
+** Calc
+*** Casual-Calc
+#+begin_src emacs-lisp :tangle yes
+  (use-package calc
+    :ensure nil
+    :defer t)
+
+  (use-package casual
+    :ensure t
+    :bind (:map
+           calc-mode-map
+           ("C-o" . casual-calc-tmenu)
+           ;; :map
+           ;; calc-alg-map 
+           ;; ("C-o" . casual-calc-tmenu)
+  	 )
+    :after (calc))
+#+end_src
+*** Math at point
+#+begin_src emacs-lisp :tangle yes
+  (unbind-key "C-z")
+  (use-package math-at-point
+    :ensure (math-at-point :type git :host github :repo "shankar2k/math-at-point")
+    :bind ("C-z =" . math-at-point)
+    )
+#+end_src
 * AI Integration
-** chatgpt-shell
+** gptel
 #+begin_src emacs-lisp :tangle yes
   (use-package gptel
     ;; :ensure (gptel :type git :host github :repo "karthink/gptel")
