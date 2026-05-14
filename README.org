@@ -29,10 +29,10 @@ It's actually a little more than just "basic". It should have most of the immedi
 3. Install some utilities for pdfs through
    #+begin_src bash
      # Almalinux
-     yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel clang
+     yum install autoconf automake gcc libpng-devel make pkgconfig poppler-devel poppler-glib-devel zlib-devel clang cmake libtool libvterm-devel
 
      # Ubuntu
-     apt install autoconf automake gcc libpng-dev make pkgconf libpoppler-dev libpoppler-glib-dev zlib1g-dev clang
+     apt install autoconf automake gcc libpng-dev make pkgconf libpoppler-dev libpoppler-glib-dev zlib1g-dev clang cmake libtool libvterm-dev libtree-sitter-dev
    #+end_src
 4. Create a directory called "org-roam" in your home.
    #+begin_src bash
