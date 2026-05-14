@@ -1636,6 +1636,7 @@ MATLAB debugging is built into matlab-mode above.
     	 )
     :config
     (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu)
+    ;; (setq typst-ts-compile-options "--font-path ~/.local/share/fonts/")
     (setq typst-ts-preview-function
     	(lambda (fname)
     	  (pop-to-buffer (save-window-excursion (find-file fname)))))
@@ -1734,10 +1735,15 @@ MATLAB debugging is built into matlab-mode above.
 *** preview
 #+begin_src emacs-lisp :tangle yes
   (use-package typst-preview
+    :ensure t
     :after typst-ts-mode
     :bind (:map typst-ts-mode-map
   	      ("C-c v" . 'typst-preview-send-position))
+    ;; :custom
+    ;; (typst-preview-browser "xwidget")
+    ;; (typst-preview-invert-colors "never")
     )
+  (elpaca-wait)
 #+end_src
 * Miscellanies
 ** OpenFOAM
@@ -1794,7 +1800,9 @@ MATLAB debugging is built into matlab-mode above.
 #+end_src
 ** Web Development
 #+begin_src emacs-lisp :tangle yes
-  (use-package simple-httpd)
+  (use-package simple-httpd
+    :ensure nil
+    )
 
   (use-package json-mode)
 
@@ -1868,7 +1876,7 @@ MATLAB debugging is built into matlab-mode above.
     (unless (treesit-language-available-p 'julia)
       (treesit-install-language-grammar 'julia))
     (unless (treesit-language-available-p 'typst)
-      (treesit-install-language-grammar 'typst))
+      (treesit-install-language-grammar 'typst))    
     )
 #+end_src
 ** Calc
