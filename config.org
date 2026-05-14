@@ -1659,8 +1659,6 @@ MATLAB debugging is built into matlab-mode above.
     	 (typst-ts-mode . aas-activate-for-major-mode)
     	 )
     :config
-    (add-to-list 'treesit-language-source-alist
-    	       '(typst "https://github.com/uben0/tree-sitter-typst"))
     (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu)
     (setq typst-ts-preview-function
     	(lambda (fname)
@@ -1886,6 +1884,13 @@ MATLAB debugging is built into matlab-mode above.
     :custom
     (treesit-auto-install 'prompt)
     :config (global-treesit-auto-mode)
+    :init
+    (add-to-list 'treesit-language-source-alist
+    	       '(typst "https://github.com/uben0/tree-sitter-typst"))
+    (unless (treesit-language-available-p 'julia)
+      (treesit-install-language-grammar 'julia))
+    (unless (treesit-language-available-p 'typst)
+      (treesit-install-language-grammar 'typst))    
     )
 #+end_src
 * AI Integration
