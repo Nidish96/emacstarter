@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ax
+# key: ax
+# --
+ax = Axis(${1:fig[1,1]}${2:, xlabel="$3"}${4:, ylabel="$5"});
+$0

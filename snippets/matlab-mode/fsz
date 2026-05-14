@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: fsz
+# key: fsz
+# --
+set(gca, 'FontSize', fsz)$0

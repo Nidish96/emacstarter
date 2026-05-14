@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: cols
+# key: cols
+# --
+*** Column 1                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: ${1:0.5}
+:END:
+$0
+
+*** Column 1                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: ${2:0.5}
+:END:

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*- 
+# name: name tag
+# key: <na
+# --
+#+name: ${1:name}

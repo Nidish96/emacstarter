@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: setg
+# key: setg
+# --
+set(0,'defaultAxesTickLabelInterpreter', 'default');
+set(0,'defaultTextInterpreter','latex');
+set(0,'DefaultLegendInterpreter', 'latex');
+set(0,'defaultAxesFontSize',${1:13});
+$0

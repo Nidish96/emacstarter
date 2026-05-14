@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: zl
+# key: zl
+# --
+zlabel('$0')

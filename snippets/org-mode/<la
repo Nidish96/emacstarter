@@ -1,0 +1,28 @@
+# -*- mode: snippet -*-
+# name: <la
+# key: <la
+# --
+#+latex_header: \usepackage[margin=1in]{geometry}
+#+latex_header: \usepackage[subrefformat=parens,labelformat=parens]{subcaption}
+
+#+latex_header: \usepackage{siunitx}
+#+latex_header: \usepackage{xcolor}
+#+latex_header: \usepackage{accents}
+#+latex_header: \usepackage{minted}
+#+latex_header: \usepackage{cancel}
+#+latex_header: \newcommand{\vc}[1]{\underbar{$#1$}}
+#+latex_header: \newcommand{\mx}[1]{\mathbf{\underline{\underbar{$#1$}}}\,}
+#+latex_header: \newcommand{\uc}[1]{\underaccent{\tilde}{#1}}
+#+latex_header: \newcommand{\mc}[1]{\underaccent{\approx}{#1}}
+#+latex_header: \usepackage{cleveref}
+
+${1:#+bibliography: ${2:refs.bib}}
+
+$0
+
+* References
+:PROPERTIES:
+:CUSTOM_ID: sec:refs
+:END:
+#+cite_export: csl ieee.csl
+#+print_bibliography: References

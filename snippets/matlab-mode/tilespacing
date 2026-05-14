@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: tilespacing
+# key: tlsp
+# --
+tiledlayout(${1:1},${2:1}, 'TileSpacing', '${3:compact}', 'Padding', '${4:compact}')$0

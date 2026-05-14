@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: d
+# key: d
+# --
+#definition-box[$0]

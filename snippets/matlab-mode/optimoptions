@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: optimoptions
+# key: optimoptions
+# --
+opt = optimoptions(${1:'fsolve'}, 'SpecifyObjectiveGradient', ${2:true}, 'Display', ${3:'iter'}$4); $0

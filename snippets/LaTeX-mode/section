@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sect
+# key: sect
+# --
+\frametitle{${1:\insertsectionnumber.~\insertsection}}

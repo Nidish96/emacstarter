@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: saved
+# key: saved
+# --
+if ${1:savdat}
+   save(sprintf('./DATS/${2:`(upcase (car (split-string (file-name-nondirectory (buffer-file-name)) "[_.]")))`_${3:datname}.mat'}$4), $0)
+end

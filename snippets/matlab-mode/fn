@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: fn
+# key: fn
+# expand-env: ((yas-indent-line 'fixed))
+# --
+function [${3:R, dRdU, dRdl}] = `(file-name-base)`($2)
+%`(file-name-base)` $4
+%
+%	USAGE:
+%		[$3] = `(file-name-base)`($2);
+%	INPUTS:
+%		$2
+%	OUTPUTS:
+%		$3
+		$0
+end

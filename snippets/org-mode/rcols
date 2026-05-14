@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: rcols
+# key: rcols
+# --
+#+reveal_html: <div class="column" style="float:left; width: 50%">
+Column 1
+#+reveal_html: </div>
+
+#+reveal_html: <div class="column" style="float:right; width: 50%">
+Column 2
+#+reveal_html: </div>
