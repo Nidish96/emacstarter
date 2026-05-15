@@ -120,13 +120,31 @@
     :init
     (vertico-mode))
 #+end_src
-** Marginalia
+*** Marginalia
 #+begin_src emacs-lisp :tangle yes
   (use-package marginalia
     :ensure t
     :after vertico
     :init
     (marginalia-mode))
+#+end_src
+*** Consult
+#+begin_src emacs-lisp :tangle yes
+(use-package consult
+  :ensure t
+  :bind (("C-c h f" . consult-recent-file)
+         ("C-c h b" . consult-buffer)      ; like helm-mini
+         ("C-c h r" . consult-ripgrep)     ; like helm-rg
+         ("C-c h l" . consult-line)        ; like helm-occur
+         ("C-c h i" . consult-imenu)))
+#+end_src
+*** Orderless
+#+begin_src emacs-lisp :tangle yes
+  (use-package orderless
+    :ensure t
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
 #+end_src
 ** COMMENT Minions
 #+begin_src emacs-lisp :tangle yes
@@ -417,12 +435,17 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
 #+end_src
 ** Tramp
 #+begin_src emacs-lisp :tangle yes
-  (setq tramp-remote-process-environment
-        '("SHELL=/bin/bash"
-          "TERM=xterm-256color"
-          "PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin:/apps/matlab/r2022a/bin:/apps/matlab/r2023a/bin:/apps/matlab/r2024a/bin:$HOME/.local/bin"))
+  (use-package tramp
+    :ensure :nil
+    :defer t
+    :config
+    (setq tramp-remote-process-environment
+  	'("SHELL=/bin/bash"
+            "TERM=xterm-256color"
+            "PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin:/apps/matlab/r2022a/bin:/apps/matlab/r2023a/bin:/apps/matlab/r2024a/bin:$HOME/.local/bin"))
 
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+    (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+    )
 #+end_src
 ** code-cells
 #+begin_src emacs-lisp :tangle yes
