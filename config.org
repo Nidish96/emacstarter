@@ -436,7 +436,7 @@ EAT stands for "Emulate A Terminal" and is the best emacs terminal emulator.
 ** Tramp
 #+begin_src emacs-lisp :tangle yes
   (use-package tramp
-    :ensure :nil
+    :ensure nil
     :defer t
     :config
     (setq tramp-remote-process-environment
