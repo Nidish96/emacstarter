@@ -112,6 +112,7 @@
 #+begin_src emacs-lisp :tangle yes
   (use-package vertico
     :ensure t
+    :hook (rfn-eshadow-update-overlay . (lambda () (interactive) (vertico-directory-tidy)))
     :custom
     (vertico-cycle t)
     (read-buffer-completion-ignore-case t)
