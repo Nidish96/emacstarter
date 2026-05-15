@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: fig
+# key: fig
+# --
+set_theme!(theme_latexfonts())
+fsz = ${8:18};
+${1:fig} = Figure(fontsize=fsz);
+if !isdefined(Main, :${2:scr}) && Makie.current_backend()==GLMakie
+   $2 = GLMakie.Screen();
+end
+
+ax = Axis($1[1, 1]${3:, xlabel="${4:xlabel}"}${5:, ylabel="${6:ylabel}"}${7:, aspect=DataAspect()});
+$0
+if Makie.current_backend()==GLMakie
+   display($2, $1);
+else
+   display($1)
+end
+   

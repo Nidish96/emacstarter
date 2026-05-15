@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: mki
+# key: mki
+# --
+using GLMakie
+using CairoMakie
+
+savfigs = ${1:false};
+if savfigs
+    CairoMakie.activate!();
+else
+    GLMakie.activate!();
+end
+
+$0

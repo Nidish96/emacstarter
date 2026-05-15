@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: axin
+# key: axin
+# --
+axin = Axis(fig[2, 5:8],
+            width=Relative(0.2),
+            height=Relative(0.2),
+            halign=0.1,
+            valign=0.9);

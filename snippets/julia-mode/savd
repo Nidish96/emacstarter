@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: savd
+# key: savd
+# --
+if ${1:savdats}
+   @save "./DATS/${2:`(upcase (car (split-string (file-name-nondirectory (buffer-file-name)) "[_.]")))`_${3:filename}.jld2"} $0
+end
