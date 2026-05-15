@@ -170,7 +170,7 @@
   (use-package transient
     :ensure t)
 #+end_src
-** Helm
+** COMMENT Helm
 [[https://emacs-helm.github.io/helm/][Helm]] is an incremental completion framework for improving the file and directory navigation.
 #+begin_src emacs-lisp :tangle yes
   (use-package helm
@@ -743,7 +743,7 @@ Org mode is Emacs' own markdown environment. It's extremely powerful.
                 ("C-c ]" . 'org-ref-insert-link))
     :config
     (require 'compat-31)
-    (require 'org-ref-helm)
+    ;; (require 'org-ref-helm)
     ;; (require 'org-ref-refproc)
     ;; (add-hook 'org-export-before-parsing-functions 'org-ref-refproc)
     (setq org-ref-insert-cite-function (lambda () (org-cite-insert nil)))
