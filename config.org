@@ -1660,7 +1660,7 @@ MATLAB debugging is built into matlab-mode above.
     	 )
     :config
     (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu)
-    ;; (setq typst-ts-compile-options "--font-path ~/.local/share/fonts/")
+    ;; (setq typst-ts-compile-options '("--font-path" "~/.local/share/fonts/"))
     (setq typst-ts-preview-function
     	(lambda (fname)
     	  (pop-to-buffer (save-window-excursion (find-file fname)))))
